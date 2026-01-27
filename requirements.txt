@@ -7,3 +7,7 @@ ipykernel
 langchain
 langchain-community
 langchain_google_genai
+pypdf
+pymupdf #for pdf loader (doc loader)
+langchain-text-splitters
+chromadb
