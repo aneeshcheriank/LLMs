@@ -5,9 +5,15 @@ pytest-cov
 ipykernel
 
 langchain
+langchain-core
 langchain-community
 langchain_google_genai
+langchain-groq
+langchain-huggingface
+langchain-text-splitters
+langchain-chroma
+
 pypdf
 pymupdf #for pdf loader (doc loader)
-langchain-text-splitters
 chromadb
+sentence-transformers
