@@ -17,3 +17,4 @@ pypdf
 pymupdf #for pdf loader (doc loader)
 chromadb
 sentence-transformers
+python-dotenv
