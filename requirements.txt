@@ -12,6 +12,8 @@ langchain-groq
 langchain-huggingface
 langchain-text-splitters
 langchain-chroma
+langchain-experimental
+langchain-agents
 
 pypdf
 pymupdf #for pdf loader (doc loader)

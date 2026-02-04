@@ -1,5 +1,5 @@
 #!/bin/sh
-'''exec' "/home/aneesh/machine learning projects/application development with LLMs/.venv/bin/python" "$0" "$@"
+'''exec' "/home/aneesh/machine learning projects/application development with LLMs/.venv/bin/python3.12" "$0" "$@"
 ' '''
 # -*- coding: utf-8 -*-
 import re
