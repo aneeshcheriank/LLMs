@@ -32,11 +32,11 @@
 ### Llama
 | Token Name | Description |
 |---|---|
-| `<|begin_of_text|>` | Specifies the start of the prompt. |
-| `<|end_of_text|>` | Specifies the end of the prompt. |
-| `<|start_header_id|>` | These tokens enclose the role for a particular message, always paired with `<|end_header_id|>`. The possible roles are: `system`, `user`, `assistant`, and `ipython`. |
-| `<|end_header_id|>` | Pairs with `<|start_header_id|>` to define the role for a particular message. |
-| `<|eot_id|>` | End of turn. Represents when the model has determined that it has finished interacting with the user message that initiated its response. This token signals to the executor that the model has finished generating a response. |
+| `<\|begin_of_text\|>` | Specifies the start of the prompt. |
+| `<\|end_of_text\|>` | Specifies the end of the prompt. |
+| `<\|start_header_id\|>` | These tokens enclose the role for a particular message, always paired with `<|end_header_id|>`. The possible roles are: `system`, `user`, `assistant`, and `ipython`. |
+| `<\|end_header_id\|>` | Pairs with `<|start_header_id|>` to define the role for a particular message. |
+| `<\|eot_id\|>` | End of turn. Represents when the model has determined that it has finished interacting with the user message that initiated its response. This token signals to the executor that the model has finished generating a response. |
 
 - In Llama there are 4 roles (to be enclosed with in `<|start_header_id|>` and `<|end_header_id|>` tags)
     - System: 
@@ -64,9 +64,9 @@
 ## Granite
 | Token Name | Description |
 |---|---|
-| `<|system|>` | Identifies the instruction, commonly referred to as the system prompt for the foundation model. |
-| `<|user|>` | The query text to be answered. |
-| `<|assistant|>` | A cue at the end of the prompt that indicates that a generated answer is expected. |
+| `<\|system\|>` | Identifies the instruction, commonly referred to as the system prompt for the foundation model. |
+| `<\|user\|>` | The query text to be answered. |
+| `<\|assistant\|>` | A cue at the end of the prompt that indicates that a generated answer is expected. |
 
 
 # Prompting with Special Tokens
