@@ -67,3 +67,68 @@
 | `<|system|>` | Identifies the instruction, commonly referred to as the system prompt for the foundation model. |
 | `<|user|>` | The query text to be answered. |
 | `<|assistant|>` | A cue at the end of the prompt that indicates that a generated answer is expected. |
+
+
+# Prompting with Special Tokens
+- Lets update the code to use the special tokens
+- for Llama
+
+```python
+text = """
+<|begin_of_text|><|start_header_id|>system<|end_header_id|>
+You are an expert assistant who provides concise and accurate answers.<|eot_id|>
+
+<|start_header_id|>user<|end_header_id|>
+What is the capital of Canada?<|eot_id|>
+
+<|start_header_id|>assistant<|end_header_id|>
+"""
+```
+
+- Now the output being
+```
+The capital of Canada is Ottawa.
+```
+
+- similar prompts for other models
+- Granite
+```python
+"""<|system|>
+You are an expert assistant who provides concise and accurate answers.
+<|user|>
+What is the capital of France?
+<|assistant|>"""
+```
+- Mistral
+```python
+"""<s>[INST]
+You are a highly specialized assistant. You only provide answers based on facts and logic. [/INST]
+
+[INST] What is the capital of France? [/INST] </s>"""
+```
+
+### Structured text from Outputs
+- We need structured output for real world application 
+- from plain text -> structured output
+- The capital of Canada is Ottawa -> {country: "Canada", "Capital": "Ottawa"}
+
+# LangChain
+- Abstraction layer over multiple language models
+- Built in utilites for
+    - Managing prompt
+    - chaining responses
+    - parsing outputs
+    - structureing conversations
+
+- Pros
+    - Consistent and Modular intetration
+        - ability to switch models without major code change
+    - Structured output with output parsers
+    - Multi step workflow
+        - multiple prompts communicating with multiple models
+
+
+- adding CSS and JS
+    - `mkdir static`
+    - `wget -O static/script.js "https://gist.githubusercontent.com/tenzinmigmar/0168709391266a8d8da7936f1a866c71/raw/95f4f4e1a1966b3f5183dd2f822cfcfd08d2238a/script.js"`
+    - `wget -O static/styles.css "https://gist.githubusercontent.com/tenzinmigmar/278575598f79a4940993a1fc8640a60a/raw/24eda98885e854b01b4a46d1756112e91d3acc10/styles.css"`
