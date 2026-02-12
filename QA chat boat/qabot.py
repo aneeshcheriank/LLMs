@@ -55,7 +55,8 @@ def text_splitter(data):
 ## Embedding model
 def watsons_embedding():
     embed_params = {
-        EmbedTextParamsMetaNames.TRUNCATE_INPUT_TOKENS: 3,
+        EmbedTextParamsMetaNames.TRUNCATE_INPUT_TOKENS: 3, 
+        # truncate the input to 3, that is fist 3 sub-tokens of the input text will be considered for generating embeddings
         EmbedTextParamsMetaNames.RETURN_OPTIONS: {
             'input_text': True # Include text in response
         }
