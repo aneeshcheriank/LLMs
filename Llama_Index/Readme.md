@@ -75,3 +75,68 @@ nodes = node_parser.get_nodes_from_docuemtns(
 - LlamaIndex prvodes other splitters too
     - **SentenceSimilaritySplitter**: split text if the sence similary falls below some threshold
     - **A wrapper around any LangChain splitter**
+
+### Vector stores
+- `VectorStoreIndex` class
+- generate and store embeddings
+- the output is stored in memory
+
+```python
+from llama_index.core import VectorStoreIndex
+index = VectorStoreIndex(nodes)
+```
+- for persistent storage
+```python
+import chromadb
+from llama_index.core import VectorStoreIndex, StorageContext
+from llama_idex.vector_stores.chroma import ChromaVectorStore
+from llama_indx.embeddings.huggingface import HuggingFaceEmbeddings
+
+# define embedding model
+embed_model = HuggingFaceEmbeddings(
+    model_name = "sentece-transformers?all-MiniLM-L6-v2"
+)
+
+# Vector storage and storage context
+db = chromadb.PersistentClient(path='chroma_db_test')
+chroma_collection = db.get_or_create_collection("mycollection")
+vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
+storage_context = StorageContext.from_defaults(
+    vector_store=vector_store
+)
+
+# pass the nodes, model, and storage_context to VectorStoreIndex
+index = VectorStoreIndex(
+    nodes = nodes,
+    embed_model=embed_model,
+    storage_context=storage_context
+)
+
+# Retriever
+retreiver = index.as_retriever() # specify the no of items by similarity_top_k"
+retriever_nodes = retriever.retrieve(
+    "User's Prompt"
+)
+```
+
+### LLM quering
+- get_response_synthesizer
+
+```python
+from llama_index.core import get_response_synthesizer
+response_synthesizer = get_response_synthesizer()
+response = response_synthesyzer.synthesize(
+    query = "User's query", nodes=retrieved_nodes
+)
+```
+
+## LlamaIndex query engine
+- LlamaIndex query engine combines
+    - prompt embedding
+    - retrieval
+    - prompt augmentation
+    - LLM querying
+```python
+query_engine = index.as_query_engine()
+response = query_engine("User's prompt")
+```
