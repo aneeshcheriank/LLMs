@@ -135,7 +135,8 @@ response = response_synthesyzer.synthesize(
     - prompt embedding
     - retrieval
     - prompt augmentation
-    - LLM querying
+    - LLM 
+- query_engine = chunks retrival + response generation form LLM
 ```python
 query_engine = index.as_query_engine()
 response = query_engine("User's prompt")
