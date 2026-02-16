@@ -42,3 +42,47 @@
 |Indexing|Traditional databases employ indexing methods like B-trees for efficient data retrieval.|Vector databases use indexing structures like metric trees and hashing suited for high-dimensional spaces, enhancing nearest-neighbor searches and similarity assessments.|
 |Scaleability|Scaling traditional databases can be challenging, often requiring resource augmentation or data sharding.|Vector databases are designed for scalability, especially in handling large datasets and similarity searches, using distributed architectures for horizontal scaling.|
 |Applications|Traditional databases are pivotal in business applications and transactional systems where structured data is processed.|Vector databases shine in analyzing vast datasets, supporting fields like scientific research, natural language processing, and multimedia analysis.|
+
+
+## Vector DB types
+- In Memory: Store vectors directly in Memory
+    - Enable fast read and write
+        - realtime analytics and recommendation systems
+    - vendors: RedisAI & Torchserve
+
+- Disk-based vector databases
+    - stores vectors on disk
+    - Suitable for large data sets (Memory is not enough to hold the data)
+    - complex compression and retrieval techniques for speed and storing efficiency
+    - examples: Annoy, Milvus, ScaNN
+
+- Distributed vector databases
+    - spread across multiple nodes (servers)
+    - horizontal scaling and fault tolerance
+    - suitable fo r massive data sets and high-throughput tasks
+    - FAISS, Elasticserach with Vector Plugin, Dask-ML
+
+- Graph-based vector databases
+    - model data as graph
+    - nodes and edges represnet vector attributes or embeddings
+    - excel at capturing complex relationships
+    - Facilitate graph analytics
+    - Neo4j, Amazon Neptune, TigerGraph
+
+- Time-series vector databases
+    - data collected over time as vectors
+    - useful for analyzing temporal patterns and anomalies
+    - InfluxDB, TimescaleDB & Prometheus
+
+- Dedicated Vector databases
+    - Uses special characterstics to store, index, querz, and analyze vector data
+    - provides efficiencz for similaritz search, clustering and classification tasks.
+    - Special characterstics
+        - use unique data structures
+            - Reversed index
+            - Product quantization
+            - Locality-sensitive hashing (LSH)
+        - support vector operations
+            - Nearest neighbour search
+            - similarity search
+            - distance calculations
