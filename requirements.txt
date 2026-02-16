@@ -13,7 +13,11 @@ langchain-huggingface
 langchain-text-splitters
 langchain-chroma
 langchain-experimental
+<<<<<<< HEAD
 # langchain-agents
+=======
+langchain-openai
+>>>>>>> 67e865a4993be5fd5af9dd86bcb7c9d59beac7e5
 
 pypdf
 pymupdf #for pdf loader (doc loader)
