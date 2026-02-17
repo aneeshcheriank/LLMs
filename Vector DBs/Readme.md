@@ -76,7 +76,7 @@
 
 - Dedicated Vector databases
     - Uses special characterstics to store, index, query, and analyze vector data
-    - provides efficiencz for similaritz search, clustering and classification tasks.
+    - provides efficiency for similaritz search, clustering and classification tasks.
     - Special characterstics
         - use unique data structures
             - Reversed index
