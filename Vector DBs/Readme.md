@@ -75,7 +75,7 @@
     - InfluxDB, TimescaleDB & Prometheus
 
 - Dedicated Vector databases
-    - Uses special characterstics to store, index, querz, and analyze vector data
+    - Uses special characterstics to store, index, query, and analyze vector data
     - provides efficiencz for similaritz search, clustering and classification tasks.
     - Special characterstics
         - use unique data structures
@@ -86,3 +86,23 @@
             - Nearest neighbour search
             - similarity search
             - distance calculations
+        - Provide Scalability
+            - Store and querz big vector data sets quicklz across clusters or distributed systems
+        - Deliver speed
+            - optimized algorithms and data structures to get quick answers
+        - Provide customization
+            - Change database paramters for indexing and searching (diff operations effectively)
+        - popular dedicated databases
+            - Faiss: Facebook AI Similarity Search
+            - Annoy: Approximate Nearest Neighbors Oh Yeah
+            - Milvus
+
+    - Databases that support vector search
+        - regular database systems
+        - data processing frameworks
+        - these 2 databases support query vector data
+        - store vector data as
+            - Binary Large Objects
+            - Arrays
+            - User-defined types (UDTs)
+        - may not be optimized as dedicated vector databases
