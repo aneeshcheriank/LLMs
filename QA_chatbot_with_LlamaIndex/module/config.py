@@ -1,0 +1,7 @@
+CHUNK_SIZE = 512
+CHUNK_OVERLAP = 50
+
+SIMILARITY_TOP_K = 3
+
+LLM_NAME = "llama-3.3-70b-versatile"
+EMBDEDDING_MODEL_NAME = "all-MiniLM-L6-v2"
