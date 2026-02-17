@@ -87,7 +87,7 @@
             - similarity search
             - distance calculations
         - Provide Scalability
-            - Store and querz big vector data sets quicklz across clusters or distributed systems
+            - Store and querz big vector data sets quickly across clusters or distributed systems
         - Deliver speed
             - optimized algorithms and data structures to get quick answers
         - Provide customization
