@@ -138,3 +138,6 @@
 - Dot Product
 ### Choosing the right Metirc
 ![alt text](img/image2.png)
+
+## Chromadb Key Consepts and Architeture
+- vector db for retrievel tasks
