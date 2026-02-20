@@ -1,0 +1,6 @@
+diffusers
+accelerate
+safetensors
+transformers
+
+gradio
