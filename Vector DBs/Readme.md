@@ -141,3 +141,49 @@
 
 ## Chromadb Key Consepts and Architeture
 - vector db for retrievel tasks
+
+### Chroma db caipabilities
+- storage of **Embeddings** and **Metadata**
+- Vector search
+    - simantic similarity search
+- full text search
+    - find relevent doc based on similarity
+- Document storage
+    - full docuemnt, not the embedding
+- Metadata filtering
+    - using metadata to improve the accuracy of the retirievel process
+- Multi-model retrival
+    - retrive multi model data such as images, audios and text in a unified manner
+
+### Deploying chroma db
+- 2 ways
+    - Client-server architecture
+        - chroma client connect to sever
+        - server runs in a seperate process
+        - server can be start by CLI or in a Docker image
+        - client connect via HTTP
+    - Stand alone
+        - for python
+        - both client & server runs in a single process
+        - used for testing or single machine scenarios
+
+### Phases of Chroma DB architecture
+- Optional: Obtian embeddings
+    - chroma db can perform the embeddings
+- Cerating collections
+    - similar to tables in relationship db, chroma db uses collections to store embeddings
+- Storing data
+- Perform collection operations
+    - create, update, delete
+- Querying and grouping data
+
+### Chroma db workflow
+- create a collection
+    - give a name to the collection
+- Add text chunks and metadata
+    - provides the embeddings
+    - if provides only the data, chroma db convert it internally
+- Query the collection
+    - returns most similar result
+    - by default Euclidean distance
+    - also support cosine distance and dot product
