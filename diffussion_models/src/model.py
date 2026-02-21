@@ -13,7 +13,12 @@ def device():
 
 def image_generator(image, prompt):
   model_id = MODEL_NAME
-  pipe = StableDiffusionInstructPix2PixPipeline.from_pretrained(model_id, torch_dtype=torch.float16, safety_checker=None)
+  pipe = StableDiffusionInstructPix2PixPipeline.from_pretrained(
+    model_id, 
+    torch_dtype=torch.float16, 
+    use_safetensors=True,
+    safety_checker=None
+  )
   pipe.to(device())
   pipe.scheduler = EulerAncestralDiscreteScheduler.from_config(pipe.scheduler.config)
   
