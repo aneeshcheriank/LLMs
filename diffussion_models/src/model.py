@@ -1,14 +1,20 @@
 import torch
 from diffusers import StableDiffusionInstructPix2PixPipeline, EulerAncestralDiscreteScheduler
-from src import download_image
-from diffussion_models.config import 
+from src.image_process import download_image
+from config import MODEL_NAME
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+def device():
+  if torch.cuda.is_available():
+    return torch.device("cuda")
+  elif torch.backends.mps.is_available():
+    return torch.device("mps")
+  else:
+    return torch.device("cpu")
 
 def image_generator(image, prompt):
   model_id = MODEL_NAME
   pipe = StableDiffusionInstructPix2PixPipeline.from_pretrained(model_id, torch_dtype=torch.float16, safety_checker=None)
-  pipe.to(device)
+  pipe.to(device())
   pipe.scheduler = EulerAncestralDiscreteScheduler.from_config(pipe.scheduler.config)
   
   image = download_image(image)

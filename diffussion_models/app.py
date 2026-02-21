@@ -3,7 +3,7 @@ from src.model import image_generator
 
 app = gr.Interface(
     fn = image_generator,
-    inputs = [gr.Image(type="pil", lable="upload an image"), 
+    inputs = [gr.Image(type="pil", label="upload an image"), 
               gr.Text(
                   lines=2, 
                   placeholder="Input the prompt to modifiy the image"
