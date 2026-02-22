@@ -187,3 +187,5 @@
     - returns most similar result
     - by default Euclidean distance
     - also support cosine distance and dot product
+    - to serach efficiently chroma uses an algorithm
+        - Hierarchical Navigable Small World (HNSW)
