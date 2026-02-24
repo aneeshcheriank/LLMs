@@ -66,4 +66,20 @@ vectordb = Chroma(
     embedding_function=embedding_function
 )
 
+# storage for parent documents
+store = InMemoryStore()
+
+retriever = ParentDocumentRetriever(
+    vectorstore=vectordb,
+    docstore=store,
+    child_splitter=child_splitter,
+    parent_splitter=parent_splitter
+)
+
+## to add document to the collections
+retriever.add_documents(data)
+
+## to retreive documents
+retiever.invoke("smoking policy")
 ```
+- the ParentDocuemntRetriever will return the documents from the parent document not from the child
