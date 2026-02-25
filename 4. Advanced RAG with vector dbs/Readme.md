@@ -83,3 +83,68 @@ retriever.add_documents(data)
 retiever.invoke("smoking policy")
 ```
 - the ParentDocuemntRetriever will return the documents from the parent document not from the child
+
+
+## Advanced Retrievers in LlamaIndex
+
+### VectorStoreIndex
+- Semantic search based on meaning
+- Stores embddings for each document chunk
+- beast suited for semantic retrieval
+- common in llm pipelines
+
+
+### DocumentSummaryIndex
+- Generate summaries to identify relevant documents
+- generate the summaries of docuemnts while indexing
+- filters documents sbefore full retrival
+- cusefule for large diverse document sets that can't fit in the context window of the LLM
+- Advantages
+    - use summaries to filter the document
+    - 2 versions
+        - LLM based
+            - time consuming
+            - expensive
+        - Embedding based
+            - used semantic similarity
+            - efficient for large collections
+- the retriever retuns the docuemnts not their summary
+
+
+### KeyboardTableIndex
+Extract keyword matching for rule-based or hybrid search
+- this index exracts keywords form the documents
+- enable exact keyword mactching
+- maps keywords to specific chunks of context
+- Useful for hybrid or rule-based search
+
+### TF-IDF
+- TF: measures how often a keyword appear in a docuemnt
+- IDF: How rare the word is in the complete docuemnt
+- TF-IDF score is the product of these values
+    - TFIDF = TF * IDF
+    - highlight the words that are common in the document however rare in the collection
+
+#### BM25 Retriever
+- Keyword-based retriver
+- retreive content based on exact keyword match, not on semantic similarity
+
+### Auto Merging Retriever
+- presver the context in long doc using a hierarchical structure
+- break the document into parent and chield nodes
+- return parent node if enough child nodes matches
+- consolidates related context and preserves broad context
+
+### Recursive Retriever
+- Follow node relationship using references
+- it can follow
+    - Citations and Metadata links
+- support chunks and metadata references
+- Retrives content accross documents of abstraction layers
+
+### QueryFusion Retriever
+- combine results form multiple different retrivers
+- can geneate multiple querys usign LLMs to improve coverage
+- Fusion stragegies
+    - Resiprocal fussion
+    - 
