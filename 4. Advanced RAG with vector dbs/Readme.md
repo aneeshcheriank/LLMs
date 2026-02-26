@@ -112,6 +112,7 @@ retiever.invoke("smoking policy")
 
 
 ### KeywordTableIndex
+### KeywordTableIndex
 Extract keyword matching for rule-based or hybrid search
 - this index exracts keywords form the documents
 - enable exact keyword mactching
