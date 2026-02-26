@@ -1,6 +1,6 @@
 ### Explore various advanced retrivers avaialabel in LangChain and LlamaIndex
 
-|Package|LangChain|
+|Package|Retrievers|
 |---|---|
 |LangChain|1.VectorStoreIndex<br> 2.DocumentSummaryIndex <br> 3.KeywordTableIndex|
 |LlamaIndex|1.VectorIndexRetriver <br> 2.BM25Retriever <br>3.DocumentSummaryIndexRetriever <br>4. AutoMergingRetriever <br>5. RecursiveRetriver <br>6. QueryFusionRetirver|
