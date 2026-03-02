@@ -112,6 +112,7 @@ retiever.invoke("smoking policy")
 
 
 ### KeywordTableIndex
+### KeywordTableIndex
 Extract keyword matching for rule-based or hybrid search
 - this index exracts keywords form the documents
 - enable exact keyword mactching
@@ -146,7 +147,13 @@ Extract keyword matching for rule-based or hybrid search
 - combine results form multiple different retrivers
 - can geneate multiple querys usign LLMs to improve coverage
 - Fusion stragegies
-    - Resiprocal Fusion
-    - Distirbution-Based Fusion
-    - Relative Score Fusion
-
+    - Resiprocal Rank Fussion
+        - ranking docuemnts
+        - 
+    - Relative Score Fussion
+        - Normalize score within each result set
+    - Distribution-Based Fusion
+        - use statistical 
+        
+### Retriever recommendations
+![alt text](image.png)
