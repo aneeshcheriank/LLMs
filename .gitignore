@@ -212,3 +212,6 @@ __marimo__/
 
 #vector store
 chroma_db/
+
+# outputs
+output.*
