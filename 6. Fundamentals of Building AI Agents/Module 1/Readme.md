@@ -2,7 +2,7 @@
 - How LLMs can use external tools
 - LCEL (LangChain Expression Language)
 
-Objectives
+### Objectives
 - AI agents invokes tools
 - tool calling and chaining to create structured workflows
 - Use build-in agents to analyze data, generate visualization and execute database queries
