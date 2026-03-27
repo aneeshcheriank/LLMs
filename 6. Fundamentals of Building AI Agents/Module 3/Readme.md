@@ -1,4 +1,4 @@
-## Pandas dataframe agent
+## Pandas Dataframe Agent
 - special agent in Langchain to do natural langauge querying and visaulization on pandas dataframe
 - experimental module
 - not suitable for production environments
@@ -20,5 +20,26 @@ agent = create_pandas_dataframe_agent(
     handle_parsing_errors=True
 )
 
-agent.invoke("how many rows of data are in this file?")
+response = agent.invoke("how many rows of data are in this file?")
+
+# to find the model generated code
+# - need to set the return_intermediate_step = True
+print(response['intermediate_steps'][-1][0].tool_input.replace('; ', '\n'))
 ```
+
+## SQL Agent
+- Database operations
+    - read and undertand database schemas
+    - Retrieves schemas only from relevant 
+- Query management
+    - support multi-step querying
+    - query fails
+        - captures error
+        - analyze tracebacks
+        - retries the task using corrected 
+- Limitations of SQL agnets
+    - may not be accurate
+    - complex queries require manual adjustments
+    - continous testing and validation are essential
+- Query process
+![alt text](image.png)
