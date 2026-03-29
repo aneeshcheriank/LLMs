@@ -43,3 +43,36 @@ print(response['intermediate_steps'][-1][0].tool_input.replace('; ', '\n'))
     - continous testing and validation are essential
 - Query process
 ![alt text](image.png)
+
+### Setting up LangChain SQL agent
+```python
+# load and llm
+llm = ChatGroq(...)
+
+# create sql connection
+# connection parameters
+mysql_username = 'root'
+mysql_password = '....'
+mysql_host = '172.21.155.8'
+mysql_port = '3306'
+databse_name = 'Chinook'
+
+# build a mysql uri
+mysql_uri = f"mysql+mysqlconnector://{mysql_uername}:{mysql_password}@{mysql_host}:{mysql_port}/{dabase_name}"
+
+from langchain_community.utilities.sql_database import SQLDatabase
+db = SQLDatabase.from_uri(mysql_uri)
+
+# create an sql agent
+from langchain_community.agent_toolkits import create_sql_agent
+
+agent_executor = create_sql_agent(
+    llm=llm,
+    db=db,
+    verbose=True,
+    agent_type=AgentType.ZERO_SHOT_REA_DESCRIPTION #perform a resoning before acting (react agent)
+)
+
+agent_executor.invoke("How many Albums are there in the database?")
+```
+- setting `verbose=True` we can see the entire thougt process of the LLM.
