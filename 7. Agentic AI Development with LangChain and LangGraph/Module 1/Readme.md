@@ -47,6 +47,7 @@
             - the process is with minimal human intervention
 
 - use cases
+
 |Generative AI| Agentic AI|
 |---|---|
 |**createive content creation**: a youtuber can outline a topic on his next video using generative ai models, or to generate a background music|an example can be a personal purchase agent <\n>(multi step process)<\n>- hunt for products in multiple platforms <\n>- it process checkout <\n> - it cordinates delivery <\n> seek input from human only when it needed|
