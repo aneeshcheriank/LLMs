@@ -30,3 +30,26 @@
     - Agent orchestration
     - Agentic RAG pipelines
     - Query routing and retrieval
+
+
+## Generative vs Agentic AI
+- Generative AI
+    - Reactive systems  (will generte only after a user **prompt**)
+        - can generate (text, image, code, or audio)
+        - However, the system stops after the generation process
+
+- Agentic AI
+    - Proactive systems
+        - start with user prompt, however, the generation not stops after the first generatnion
+        - prompt -> a series of actions
+        - the life cycle of actions
+            - the system presives the job in hand -> it decides what to do -> it execute one task -> it learns what task it has completed -> repeat the cycle
+            - the process is with minimal human intervention
+
+- use cases
+|Generative AI| Agentic AI|
+|---|---|
+|**createive content creation**: a youtuber can outline a topic on his next video using generative ai models, or to generate a background music|an example can be a personal purchase agent <\n>(multi step process)<\n>- hunt for products in multiple platforms <\n>- it process checkout <\n> - it cordinates delivery <\n> seek input from human only when it needed|
+
+- Agentic AI using the LLMs as the **Resoning agent** for agentic process
+- **Chain of Thought Reasoning**
