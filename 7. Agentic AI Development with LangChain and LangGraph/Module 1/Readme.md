@@ -50,7 +50,7 @@
 
 |Generative AI| Agentic AI|
 |---|---|
-|**createive content creation**: a youtuber can outline a topic on his next video using generative ai models, or to generate a background music|an example can be a personal purchase agent <\n>(multi step process)<\n>- hunt for products in multiple platforms <\n>- it process checkout <\n> - it cordinates delivery <\n> seek input from human only when it needed|
+|**createive content creation**: a youtuber can outline a topic on his next video using generative ai models, or to generate a background music|an example can be a personal purchase agent </br>(multi step process)</br>- hunt for products in multiple platforms </br>- it process checkout </br> - it cordinates delivery </br> seek input from human only when it needed|
 
 - Agentic AI using the LLMs as the **Resoning agent** for agentic process
 - **Chain of Thought Reasoning**
