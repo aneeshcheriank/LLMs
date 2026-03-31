@@ -42,7 +42,7 @@ print(response['intermediate_steps'][-1][0].tool_input.replace('; ', '\n'))
     - complex queries require manual adjustments
     - continous testing and validation are essential
 - Query process
-![alt text](image.png)
+![alt text](images/image.png)
 
 ### Setting up LangChain SQL agent
 ```python
