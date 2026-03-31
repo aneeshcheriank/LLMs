@@ -93,7 +93,7 @@
     |Scalability|Limited to task size|Can scale to handle mulit-agent, multi-stage problems|
     |Typical Applications|chatbots, virtual assistans, workflow helpers|Supply chain coordination, enterprose optimiztaion, virtual team leaders|
 
-![alt text](image.png)
+![alt text](images/image.png)
 
 #### Advanced Resoning Capabilites
 - integrate advanced resoning capabilites using frameworks such as
