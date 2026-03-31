@@ -54,3 +54,69 @@
 
 - Agentic AI using the LLMs as the **Resoning agent** for agentic process
 - **Chain of Thought Reasoning**
+
+### Agentic AI
+- Agentic AI refers to systems made up of multiple (single) agents that work tougther. they can
+    - breakdown big goals into smaller tasks
+    - Adapt to new inputs or situations
+    - communicate and cordinate with one another
+
+- **AI Agent** vs **Agentic AI**
+    - **AI Agents** chracterised by autonomous software tools desigened for goal-directed task execution. The operation involves 3 caipabilites,
+        - **Autonomy**
+            - function with minimal human intervention
+            - caipable of preceving environmental inputs
+            - resoning over contextual data
+            - executing actions in real-time
+        - **Task-Specificity**
+            - agent is optimized for narrow well defined task
+                - email filtering, database querying etc
+        -**Reactivity**
+            - respond to intput from users, APIs, or other software environments in realtime.
+
+    - **Agentic AI**
+        - Agentic AI tasks things further to AI Agents
+            - brings multiple agents into a team
+            - agents cordinate tasks, exchange information, adapt roles dynamically, and share memory
+            - Key features
+                - Task decomposition: goals split into subtasks automatically
+                - Inter-Agent Communication: share updates and results via shared memory or messaging
+                - Memory and reflection: remember past steps and learn from outcomes
+                - Orchestration: a lead agent or system coordiantes the team
+
+    |Feature|AI Agent|Agentic AI|
+    |---|---|---|
+    |Design|One agent, one task|Multiple agents with distictive roles|
+    |Communication|No cordination with others|Constant communication and coordination|
+    |Memory|Stateless or minimal history|Persistent memory of tasks, and stategies|
+    |Resoning|Linear logic (do step A -> B)|iterative planning and re-planning with advanced reasoning|
+    |Scalability|Limited to task size|Can scale to handle mulit-agent, multi-stage problems|
+    |Typical Applications|chatbots, virtual assistans, workflow helpers|Supply chain coordination, enterprose optimiztaion, virtual team leaders|
+
+![alt text](image.png)
+
+#### Advanced Resoning Capabilites
+- integrate advanced resoning capabilites using frameworks such as
+    - ReAct
+    - Chain-of-Thought Prompting
+    - Tree of Thoughts
+- these mechanisms helps the agents to breakdown the goal into multiple tasks, evaluate intermediate steps, and re-plan actions dynamically.
+
+### Persistent memory systems
+- memory subsystem to preserve and persist knowledge accross cycles or agent sessions
+- Memory types include
+    - episodic memory: task specific history
+    - semantic memory: long term facts or structured data
+    - vector based memory: for RAG
+
+### Applications
+- Agentic AI
+    - customer support
+    - Internal enterprise search
+    - Email filtering and prioritization
+
+- Agentic AI
+    - multi-agent search assistent
+    - Roboritic cordination (eg. drones)
+    - collaborative medical decision sytems
+    - Adaptive workflow automation
