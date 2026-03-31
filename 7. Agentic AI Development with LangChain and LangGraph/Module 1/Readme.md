@@ -110,7 +110,7 @@
     - vector based memory: for RAG
 
 ### Applications
-- Agentic AI
+- AI Agents
     - customer support
     - Internal enterprise search
     - Email filtering and prioritization
@@ -120,3 +120,27 @@
     - Roboritic cordination (eg. drones)
     - collaborative medical decision sytems
     - Adaptive workflow automation
+
+#### Agentic AI complexities
+- inter-agent error cascades
+- cordination breakdowns
+- scalability limits 
+- explainability issues coming from orchestraing multiple agents
+
+#### Emerging solutions
+- RAG: to address halusination
+- Tool-augemented reasoning
+- Memory architechure: persisting information accross tasks. Episodic memory allow to recall previous tasks and feedbacks
+
+### Agentic AI tools and Frameworks
+- **LangChain**
+    - to build application around LLM
+    - support tool usage, memory, chain of reasoning, and agent interfaces
+- **LangGraph**
+    - Multi-agent workflows using graph-based execution model.
+    - allows to deinfe agents as nodes and their interaction as edges
+    - ideal for orchestrating collaborative agens in Agentic AI.
+- **IBM Bee, CrewAI, AutoGen, and others**
+    - open source tools 
+    - simplifies the design of multi-agent team, role assignment, and structured task planning
+    - allow develpers to simulate or deploy collaborative agent environment using memory, messaging, and dynamic delegation
