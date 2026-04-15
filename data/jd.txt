@@ -1,0 +1,37 @@
+About the job
+Overview:
+
+As the product team, we are translating the latest research on language models into practical applications for our clients, including Fortune 2000 companies and the government. You will have a direct impact on the product and will work closely with scientists and engineers to deliver the best product possible.
+
+Your responsibilities:
+
+Prototyping ideas and evaluating how they would fit into our product vision. 
+Maintaining a balance between cutting-edge research and practical applications, producing deliverables and products that set industry benchmarks. 
+Stay updated on the latest advancements in NLP and machine learning, ensuring our solutions remain at the forefront of technology. 
+Model Development and Fine-tuning: Implement, refine, and fine-tune state-of-the-art model architectures, ensuring they perform in real-world scenarios. 
+Documentation and Reporting: Maintain detailed records of AI experiments, findings, and methodologies, communicating complex insights to varied audiences. 
+
+Your profile:
+
+You care about making something people want. You want to ship something that will bring value to our users. You want to deliver AI solutions end-to-end and not end on building a prototype. 
+Degree in Computer Science or a related field. 
+Experience in production-izing AI research innovations into real-world applications. 
+Familiarity with popular NLP tools and frameworks such as PyTorch or HF transformers. 
+In-depth knowledge of transformer architectures. 
+Experience with research organizations and structured work. 
+
+Nice if you have :
+
+Experience with automation of prompt engineering semantic search and multi-modal models. 
+PhD in Computer Science or a related field. 
+Publication track record. 
+
+What you can expect from us:
+
+Become part of an AI revolution
+30 Days of paid vacation
+Flexible working hours
+Join a dynamic start-up and a rapidly growing team 
+Work with international industry and science experts
+Take on responsibility and shape our company and technology 
+Regular team events
