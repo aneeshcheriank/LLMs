@@ -2,24 +2,17 @@
 configure the model for agents
 """
 
-import dotenv
-import os
+# Now that the environment is loaded, it's safe to import your configuration
+from src.configuration import MODEL
+from src.environment import config_env
+
+# 4. Import LangChain now that the API key is securely set in os.environ
 from langchain_groq import ChatGroq
 
-from src.configuration import DOTENV_PATH, MODEL
+def get_llm():
+    config_env()
 
-try:
-    dotenv.load_dotenv(DOTENV_PATH)
-    os.environ["GROQ_API_KEY"] = os.getenv("GROQ")
-except FileNotFoundErrorError:
-    print(f"file: {DOTENV_PATH} not found")
-
-
-def llm():
-    llm = ChatGroq(
+    return ChatGroq(
         model=MODEL,
-        provider='groq',
         temperature=0.0
     )
-
-    return llm
