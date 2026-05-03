@@ -33,7 +33,8 @@ def create_strategy(state: AgentState):
 
     llm = get_llm()
     tool_list = get_tool_list()
-    chain = prompt | llm.bind_tools(tool_list)
+    llm_with_tools = llm.bind_tools(tool_list)
+    chain = prompt | llm_with_tools
 
     response = chain.invoke(input)
     return response
