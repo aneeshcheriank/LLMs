@@ -1,0 +1,7 @@
+yfinance == 1.3.0
+pandas
+numpy
+langchain-core
+langchain-qroq
+langgraph
+pydantic

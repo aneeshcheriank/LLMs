@@ -9,7 +9,8 @@ if __name__ == "__main__":
     30 years?"""
 
     response = create_strategy({
-        "chat_history": [HumanMessage(content=question)]
+        "user_input": question,
+        "chat_history": []
     })
 
     print(response)

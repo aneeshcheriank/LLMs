@@ -1,37 +1,75 @@
 from langgraph.graph import StateGraph, START, END
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from pydantic import BaseModel, Field, field_serializer
-from typing import List
+from typing import TypedDict
 
 from src.model import get_llm
+from src.tools import get_tool_mappping, get_tool_list
+from langchain_core.messages import ToolMessage
 
-class AssetAllocation(BaseModel):
-    asset_class: str = Field(description="The class of the asset, e.g., 'Stock', 'Bond', 'Real Estate', 'Commodity'.")
-    asset_ticker: str = Field(description="The ticker symbol of the asset, e.g., AAPL for Apple Inc.")
-    allocation_percentage: float = Field(description="The percentage of the total portfolio allocated to this asset, e.g., 20.0 for 20%.")
+# Define the graph state
+class AgentState(TypedDict):
+    user_input: str
+    chat_history: list
+    target_volatility: float
+    selected_index: str
 
-class InvestmentStrategy(BaseModel):
-    strategy_name: str = Field(description="A descriptive name for the investment strategy, e.g., 'Aggressive Growth Strategy'.")
-    asset_allocations: List[AssetAllocation] = Field(description="A list of asset allocations that make up the strategy.")
 
-strategy_prompt = ChatPromptTemplate.from_messages([
-    ("system",
-     """You are an expert financial portfolio manager with 10 years of experience in creating diversified investment strategies.
+def create_strategy(state: AgentState):
+    class Schema(BaseModel):
+        index: str = Field(description="The ticker symbol of the selected index from the curated list, e.g., SPY, AGG.")
+        volatility: str = Field(description="The perceived volatility as a decimal, e.g., 0.12.")
     
-    Your task is to generate a concrete asset allocation strategy tailored to the client's profile.
-    
-    CRITICAL REQUIREMENTS:
-    1. The strategy MUST be diversified across multiple asset classes (e.g., equities, fixed income, real estate, alternatives).
-    2. Select exactly or at least 5 distinct, real-world investable assets (e.g., specific ETFs, mutual funds, or broad asset classes like 'S&P 500 ETF (SPY)', 'US Treasury Bonds (TLT)').
-    3. Assign a percentage allocation to each asset. The total sum MUST equal exactly 100%.
-    4. Base the strategy entirely on the client's provided risk tolerance, investment horizon, and financial goals."""),
-    MessagesPlaceholder(variable_name="chat_history")
-])
+    prompt = ChatPromptTemplate.from_messages([
+        ("system",
+     """You are an expert financial portfolio manager. Your task is to match a client's risk and investment profile to the most appropriate index.
+     you are expected to use tools to find the best index for a volatility target. You will be provided with a client's input describing their 
+     investment goals and risk tolerance, and you must convert that into a target volatility. Then, using the get_best_index_for_volatility tool, 
+     you will identify the best matching index from the curated universe.
+     """),
+        MessagesPlaceholder(variable_name="chat_history"),
+        ("human", "{user_input}")
+    ])
 
-llm = get_llm()
+    llm = get_llm()
+    tool_list = get_tool_list()
+    chain = prompt | llm.bind_tools(tool_list)
 
-strategy_chain = strategy_prompt | llm.with_structured_output(InvestmentStrategy)
-
-def create_strategy(input):
-    response = strategy_chain.invoke(input)
+    response = chain.invoke(input)
     return response
+
+def tool_call_node(state: AgentState):
+    # this node will handle the tool call and update the state accordingly
+    last_state = state["messages"][-1]
+
+    print("tool_call")
+
+    tool_messages = []
+    for tool_call in last_state.tool_calls:
+
+        name = tool_call.get("name")
+        args = tool_call.get("args")
+        
+        tool_mapping = get_tool_mappping()
+        if name in tool_mapping:
+            tool_response = tool_mapping["name"](**args)
+            tool_messages.append(
+                ToolMessage(
+                    content = str(tool_response),
+                    id = tool_call.get("id")
+                )
+            )
+
+    return {
+        "messages": tool_messages #the tool_messages is a list
+    }
+
+def strategy_router(state: AgentState):
+    
+    # check the tool calls
+    last_state = state["messages"][-1]
+    if last_state.tool_calls:
+         return "tool_call"    
+    
+    return END
+
