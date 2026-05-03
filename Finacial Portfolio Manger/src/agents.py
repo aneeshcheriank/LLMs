@@ -73,3 +73,8 @@ def strategy_router(state: AgentState):
     
     return END
 
+def formatter_node(state: AgentState):
+    # this node will format the final response
+    last_state = state["messages"][-1]
+    pass
+

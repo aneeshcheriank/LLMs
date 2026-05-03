@@ -1,4 +1,4 @@
-from src.agents import create_strategy
+from src.chain import build_graph
 from langchain_core.messages import HumanMessage
 
 if __name__ == "__main__":
@@ -8,7 +8,8 @@ if __name__ == "__main__":
     old moderate risk investro with 10k to invest for
     30 years?"""
 
-    response = create_strategy({
+    workflow = build_graph()
+    response = workflow.invoke({
         "user_input": question,
         "chat_history": []
     })
