@@ -53,7 +53,7 @@ def tool_call_node(state: AgentState):
         
         tool_mapping = get_tool_mappping()
         if name in tool_mapping:
-            tool_response = tool_mapping["name"](**args)
+            tool_response = tool_mapping["name"].invoke(**args)
             tool_messages.append(
                 ToolMessage(
                     content = str(tool_response),
