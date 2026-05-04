@@ -1,5 +1,5 @@
 from src.chain import build_graph
-from langchain_core.messages import HumanMessage
+from src.agents import stock_picker
 
 if __name__ == "__main__":
 
