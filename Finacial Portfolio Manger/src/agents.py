@@ -19,7 +19,7 @@ class AgentState(TypedDict):
     iterations: int
 
 
-def create_strategy(state: AgentState):
+def index_matcher(state: AgentState):
     class Schema(BaseModel):
         index: str = Field(description="The ticker symbol of the selected index from the curated list, e.g., SPY, AGG.")
         volatility: str = Field(description="The perceived volatility as a decimal, e.g., 0.12.")
@@ -85,7 +85,7 @@ def tool_call_node(state: AgentState):
         "iterations": iterations
     }
 
-def strategy_router(state: AgentState):    
+def tool_router(state: AgentState):    
     # check the tool calls
     # if the tool call is not resolved, the agent can product its final response
     last_state = state["chat_history"][-1]
