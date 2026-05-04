@@ -188,7 +188,7 @@ def stock_picker(state: AgentState):
         "user_input": state["user_input"],
         "base_index": state["base_index"],
         "perceived_volatility": state["perceived_volatility"],
-        "iterations": 0 # reset the iteration counter for the stock picker agent
+        "iterations": 0, # reset the iteration counter for the stock picker agent
         "chat_history": [] # reset the chat history for the stock picker agent, as it will have its own tool calls and responses
     })
 
