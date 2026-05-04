@@ -167,21 +167,22 @@ def stock_picker(state: AgentState):
      """You are an expert financial portfolio manager. Your pick best stocks from the selected index.
 
      IMPORTANT: 
-     - You must select stock that based on various technical indicators. 
-     - The stock should have a postive alpha
-     - Beta sould be between match the user's risk preference
-     - The stock should have 0.25 percentile in the group of stocks in the index based on PE ratio
-     - Also use other indicator that you think is relevant
+     - You must select stock from the base index. 
+     - The selection of the stocks should not change the overall perceived volatility of the portfolio.
+     - The stock should have a postive alpha.
+     - Beta sould be between match the user's risk preference.
+     - The stock should have 0.25 percentile in the group of stocks in the index based on PE ratio.
+     - Also use other indicator that you think is relevant.
+     - keep the number of stocks between 5-10 to ensure diversification and manageability.
      """),
-        MessagesPlaceholder(variable_name="chat_history"),
-        ("human", "{user_input}")
+        ("human", "investment objective: {user_input}, base index: {base_index}, target volatility: {perceived_volatility}"),
     ])
 
     llm = get_llm()
     chain = prompt | llm
-    stock = state[-1]
     response = chain.invoke({
-        "user_input": state["user_input"]
-
+        "user_input": state["user_input"],
+        "base_index": state["base_index"],
+        "perceived_volatility": state["perceived_volatility"]
     })
     return {"chat_history": [response]}
