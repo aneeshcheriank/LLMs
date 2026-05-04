@@ -14,5 +14,6 @@ if __name__ == "__main__":
         "chat_history": [],
         "iterations": 0
     })
+    last_response = response["chat_history"][-1]
 
-    print(response)
+    print(last_response)

@@ -43,7 +43,14 @@ def create_strategy(state: AgentState):
 
     llm = get_llm()
     tool_list = get_tool_list()
-    llm_with_tools = llm.bind_tools(tool_list)
+
+    # need to implement a hard-stop on tool calls
+    # when the limit is reached, the llm will be removed the tool calling capability and only return the final answer
+    if state["iterations"] >= MAX_TOOL_CALLS:
+        llm_with_tools = llm
+    else:
+        llm_with_tools = llm.bind_tools(tool_list)
+
     chain = prompt | llm_with_tools
 
     response = chain.invoke(state)
@@ -91,24 +98,56 @@ def strategy_router(state: AgentState):
     
     return "formatter"
 
-def formatter_node(state: AgentState):
-    # this node will format the final response
-    last_state = state["chat_history"][-1]
+# def formatter_node(state: AgentState):
+#     # this node will format the final response
+#     last_state = state["chat_history"][-1]
     
-    prompt = ChatPromptTemplate.from_messages([
-        ("system",
-     """You are an expert financial reporter. You have multiple years of experience in financial analysis and reporting. Your task is to take 
-     the output from the previous tool calls, which includes the best matching index and its volatility, and format it into a clear and concise 
-     report for the client. The report should include the recommended index, its actual volatility, how it compares to the client's target volatility, 
-     and any relevant insights or recommendations based on this information.
-     """),
-        MessagesPlaceholder(variable_name="chat_history")
-    ])
+#     prompt = ChatPromptTemplate.from_messages([
+#         ("system",
+#      """You are an expert financial reporter. You have multiple years of experience in financial analysis and reporting. Your task is to take 
+#      the output from the previous tool calls, which includes the best matching index and its volatility, and format it into a clear and concise 
+#      report for the client. The report should include the recommended index, its actual volatility, how it compares to the client's target volatility, 
+#      and any relevant insights or recommendations based on this information.
+#      """),
+#         MessagesPlaceholder(variable_name="chat_history")
+#     ])
 
     
+#     llm = get_llm()
+#     llm_with_structured_output = llm.with_structured_output(IndexReport)
+#     chain = prompt | llm_with_structured_output
+#     response = chain.invoke({
+#         "chat_history": [last_state]
+#     })
+
+#     return {"chat_history": [response]}
+
+def formatter_node(state: AgentState):
+    # 1. Convert the message history into a clean string for the reporter
+    # This prevents the "Unknown Tool" error and the "List vs Object" error.
+    context_string = ""
+    for msg in state["chat_history"]:
+        if hasattr(msg, 'content') and msg.content:
+            context_string += f"{msg.type}: {msg.content}\n"
+
+    prompt = ChatPromptTemplate.from_messages([
+        ("system",
+         """You are an expert financial reporter. 
+         Take the following context (User goals and Tool results) and 
+         generate the final IndexReport.
+         """),
+        ("human", "Here is the investment context:\n\n{context}")
+    ])
+    
     llm = get_llm()
+    # Structured output works best when the input is plain text context
     llm_with_structured_output = llm.with_structured_output(IndexReport)
+    
     chain = prompt | llm_with_structured_output
-    response = chain.invoke(state)
+    
+    # 2. Invoke with a plain string variable instead of a message list
+    response = chain.invoke({
+        "context": context_string
+    })
 
     return {"chat_history": [response]}

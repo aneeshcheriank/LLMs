@@ -31,7 +31,7 @@ def get_best_index_for_volatility(target_volatility: float, test_tickers: List[s
             raise ValueError("No data returned")
 
         close = data["Close"]
-        daily_returns = close.pct_change().dropna()
+        daily_returns = close.pct_change().dropna(how="all", axis=1).dropna()
         annualized_vol = daily_returns.std() * np.sqrt(252)
 
         if isinstance(annualized_vol, float):
