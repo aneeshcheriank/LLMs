@@ -56,12 +56,12 @@ def get_best_index_for_volatility(target_volatility: float, test_tickers: List[s
         }
 
 
-def get_tool_mappping():
+def index_matcher_tool_mappping():
     return {
         "get_best_index_for_volatility": get_best_index_for_volatility
     }
 
-def get_tool_list():
-    tool_mapping = get_tool_mappping()
+def index_matcher_tool_list():
+    tool_mapping = index_matcher_tool_mappping()
     tool_list = list(tool_mapping.values())
     return tool_list

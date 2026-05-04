@@ -1,35 +1,35 @@
-from langgraph.graph import StateGraph, START, END
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from pydantic import BaseModel, Field, field_serializer
 from typing import TypedDict, Annotated
 import operator
 from langchain_core.messages import ToolMessage
 
 from src.model import get_llm
-from src.tools import get_tool_mappping, get_tool_list
+from src.tools import index_matcher_tool_mappping, index_matcher_tool_list
 from src.configuration import MAX_TOOL_CALLS
 from src.output_schema import IndexReport
 
+# Index picker agent implementation
 # Define the graph state
 class AgentState(TypedDict):
     user_input: str
     chat_history: Annotated[list, operator.add]
-    target_volatility: float
-    selected_index: str
     iterations: int
+    perceived_volatility: float
+    actual_volatility: float
+    base_index: str
+    filtered_index: str
+    portfolio_weights: dict
+    
 
 
 def index_matcher(state: AgentState):
-    class Schema(BaseModel):
-        index: str = Field(description="The ticker symbol of the selected index from the curated list, e.g., SPY, AGG.")
-        volatility: str = Field(description="The perceived volatility as a decimal, e.g., 0.12.")
     
     prompt = ChatPromptTemplate.from_messages([
         ("system",
      """You are an expert financial portfolio manager. Your task is to match a client's risk and investment profile to the most appropriate index.
      you are expected to use tools to find the best index for a volatility target. You will be provided with a client's input describing their 
      investment goals and risk tolerance, and you must convert that into a target volatility. Then, using the get_best_index_for_volatility tool, 
-     you will identify the best matching index from the curated universe.
+     you will identify the best matching index.
 
      IMPORTANT: 
      - You must select an index that reflect the risk and return perference of the user. 
@@ -42,7 +42,7 @@ def index_matcher(state: AgentState):
     ])
 
     llm = get_llm()
-    tool_list = get_tool_list()
+    tool_list = index_matcher_tool_list()
 
     # need to implement a hard-stop on tool calls
     # when the limit is reached, the llm will be removed the tool calling capability and only return the final answer
@@ -70,7 +70,7 @@ def tool_call_node(state: AgentState):
         name = tool_call.get("name")
         args = tool_call.get("args")
         
-        tool_mapping = get_tool_mappping()
+        tool_mapping = index_matcher_tool_mappping()
         if name in tool_mapping:
             tool_response = tool_mapping[name].invoke(args) #invoke expect dictionary as input
             tool_messages.append(
@@ -149,5 +149,39 @@ def formatter_node(state: AgentState):
     response = chain.invoke({
         "context": context_string
     })
+    report_data = response.model_dump()
 
+    return {
+        "chat_history": [response],
+        "base_index": report_data["base_index"],
+        "perceived_volatility": report_data["perceived_volatility"],
+        "actual_volatility": report_data["actual_volatility"]
+    }
+
+# Stock picker agent implementation
+# - select the stock in the index based of alpha, beta, PE and other related factors
+def stock_picker(state: AgentState):
+    
+    prompt = ChatPromptTemplate.from_messages([
+        ("system",
+     """You are an expert financial portfolio manager. Your pick best stocks from the selected index.
+
+     IMPORTANT: 
+     - You must select stock that based on various technical indicators. 
+     - The stock should have a postive alpha
+     - Beta sould be between match the user's risk preference
+     - The stock should have 0.25 percentile in the group of stocks in the index based on PE ratio
+     - Also use other indicator that you think is relevant
+     """),
+        MessagesPlaceholder(variable_name="chat_history"),
+        ("human", "{user_input}")
+    ])
+
+    llm = get_llm()
+    chain = prompt | llm
+    stock = state[-1]
+    response = chain.invoke({
+        "user_input": state["user_input"]
+
+    })
     return {"chat_history": [response]}
