@@ -6,7 +6,7 @@ from typing import List, Dict
 from langchain_core.tools import tool
 
 @tool
-def get_best_index_for_volatility(target_volatility: float, test_tikcers: List[str]=None) -> Dict:
+def get_best_index_for_volatility(target_volatility: float, test_tickers: List[str]=None) -> Dict:
     """
     Fetches historical data from Yahoo Finance for a list of tickers, 
     calculates their 1-year realized volatility, and returns the best match.
@@ -25,36 +25,35 @@ def get_best_index_for_volatility(target_volatility: float, test_tikcers: List[s
         ]
 
     try:
-        #1. Download 1 year of historical daily close prices
-        data = yf.download(test_tickers, period="1y")["Close"]
-    
-        # 2. Calculate daily returns
-        daily_returns = data.pct_change().dropna()
-    
-        # 3. Annualize the standard deviation of daily returns
-        # 252 is the number of trading days in a year
-        annualized_volatilities = daily_returns.std() * np.sqrt(252)
-    
-        # 4. Find the ticker that is closest to the target volatility
-        best_ticker = None
-        closest_diff = float('inf')
-        best_actual_vol = 0.0
-        
-        for ticker, vol in annualized_volatilities.items():
-            diff = abs(vol - target_volatility)
-            if diff < closest_diff:
-                closest_diff = diff
-                best_ticker = ticker
-                best_actual_vol = vol
-    
+        data = yf.download(test_tickers, period="1y")
+
+        if data.empty:
+            raise ValueError("No data returned")
+
+        close = data["Close"]
+        daily_returns = close.pct_change().dropna()
+        annualized_vol = daily_returns.std() * np.sqrt(252)
+
+        if isinstance(annualized_vol, float):
+            annualized_vol = {test_tickers[0]: annualized_vol}
+
+        best_ticker = min(
+            annualized_vol,
+            key=lambda t: abs(annualized_vol[t] - target_volatility)
+        )
+
         return {
             "best_matching_index": best_ticker,
             "target_volatility": target_volatility,
-            "actual_volatility": round(best_actual_vol, 4),
-            "difference": round(closest_diff, 4)
+            "actual_volatility": round(float(annualized_vol[best_ticker]), 4),
+            "difference": round(abs(annualized_vol[best_ticker] - target_volatility), 4)
         }
+
     except Exception as e:
-        return f"error caluclating volatility: {str(e)}"
+        return {
+            "error": True,
+            "message": str(e)
+        }
 
 
 def get_tool_mappping():
@@ -64,5 +63,5 @@ def get_tool_mappping():
 
 def get_tool_list():
     tool_mapping = get_tool_mappping()
-    tool_list = list(tool_mapping.keys())
+    tool_list = list(tool_mapping.values())
     return tool_list

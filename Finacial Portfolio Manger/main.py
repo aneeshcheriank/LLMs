@@ -11,7 +11,8 @@ if __name__ == "__main__":
     workflow = build_graph()
     response = workflow.invoke({
         "user_input": question,
-        "chat_history": []
+        "chat_history": [],
+        "iterations": 0
     })
 
     print(response)
