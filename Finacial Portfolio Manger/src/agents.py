@@ -75,16 +75,16 @@ def tool_call_node(state: AgentState):
         "iterations": iterations
     }
 
-def strategy_router(state: AgentState):
+def strategy_router(state: AgentState):    
+    # check the tool calls
+    # if the tool call is not resolved, the agent can product its final response
+    last_state = state["chat_history"][-1]
+    if last_state.tool_calls:
+         return "tool_call"   
 
     # check the max_iterations
     if state["iterations"] >= MAX_TOOL_CALLS:
-        return "formatter"
-    
-    # check the tool calls
-    last_state = state["chat_history"][-1]
-    if last_state.tool_calls:
-         return "tool_call"    
+        return "formatter" 
     
     return "formatter"
 
