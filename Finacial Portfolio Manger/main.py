@@ -12,7 +12,9 @@ if __name__ == "__main__":
     response = workflow.invoke({
         "user_input": question,
         "chat_history": [],
-        "iterations": 0
+        "stock_picker_history": [],
+        "iterations": 0,
+        "iterations_stock_picker": 0
     })
 
     print(response["filtered_stocks"])

@@ -12,13 +12,18 @@ from src.output_schema import IndexReport, StockSelectionReport
 # Define the graph state
 class AgentState(TypedDict):
     user_input: str
+
     chat_history: Annotated[list, operator.add]
-    iterations: int
+    stock_picker_history: Annotated[list, operator.add]
+
     perceived_volatility: float
     actual_volatility: float
     base_index: str
     filtered_stocks: StockSelectionReport # from python 3.9 onwards, we can use list[str] instead of List[str]
     portfolio_weights: dict[str, float]
+
+    iterations: int
+    iterations_stock_picker: int
 
 
 def index_matcher(state: AgentState):
@@ -176,9 +181,9 @@ def stock_picker(state: AgentState):
      - Also use other indicator that you think is relevant.
      - consider the investable sum when picking the stocks, as some stocks might be too expensive for 
      the user to buy given their investable sum.
-     - keep the number of stocks between 100-150 to ensure diversification.
+     - keep the number of stocks between 10-15 to ensure diversification.
      """),
-        ("human", "investment objective: {user_input}, base index: {base_index}, target volatility: {perceived_volatility}"),
+        ("human", "investment objective: {user_input}, base index: {base_index}, target volatility: {perceived_volatility}, stock picking history: {stock_picker_history}"),
     ])
 
     llm = get_llm()
@@ -188,25 +193,27 @@ def stock_picker(state: AgentState):
         "user_input": state["user_input"],
         "base_index": state["base_index"],
         "perceived_volatility": state["perceived_volatility"],
-        "iterations": 0, # reset the iteration counter for the stock picker agent
-        "chat_history": [] # reset the chat history for the stock picker agent, as it will have its own tool calls and responses
+        "stock_picker_history": state["stock_picker_history"]
     })
 
-    return {"chat_history": [response]}
+    return {
+        "stock_picker_history": [response]
+        }
 
 def tool_call_node_stock_picker(state: AgentState):
     # this node will handle the tool call and update the state accordingly
-    last_state = state["chat_history"][-1]
+    last_state = state["stock_picker_history"][-1]
     # increment the iteration count
-    iterations = state["iterations"] + 1
+    iterations = state["iterations_stock_picker"] + 1
 
-    print("tool_call")
+    print(f"tool_call: {iterations}")
 
     tool_messages = []
     for tool_call in last_state.tool_calls:
 
         name = tool_call.get("name")
         args = tool_call.get("args")
+        print(f"tool_call_name: {name}, args: {args}")
         
         tool_mapping = stock_picker_tool_mapping
         if name in tool_mapping:
@@ -219,15 +226,15 @@ def tool_call_node_stock_picker(state: AgentState):
             )
 
     return {
-        "chat_history": tool_messages, #the tool_messages is a list
-        "iterations": iterations
+        "stock_picker_history": tool_messages, #the tool_messages is a list
+        "iterations_stock_picker": iterations
     }
 
-def formatter_node(state: AgentState):
+def formatter_node_stock_picker(state: AgentState):
     # 1. Convert the message history into a clean string for the reporter
     # This prevents the "Unknown Tool" error and the "List vs Object" error.
     context_string = ""
-    for msg in state["chat_history"]:
+    for msg in state["stock_picker_history"]:
         if hasattr(msg, 'content') and msg.content:
             context_string += f"{msg.type}: {msg.content}\n"
 
@@ -253,6 +260,19 @@ def formatter_node(state: AgentState):
     report_data = response.model_dump()
 
     return {
-        "chat_history": [response],
+        "stock_picker_history": [response],
         "filtered_stocks": report_data["selected_stocks"]
     }
+
+def tool_router_stock_picker(state: AgentState):    
+    # check the tool calls
+    # if the tool call is not resolved, the agent can product its final response
+    last_state = state["stock_picker_history"][-1]
+    if last_state.tool_calls:
+         return "tool_call_node_stock_picker"   
+
+    # # check the max_iterations
+    # if state["iterations"] >= MAX_TOOL_CALLS:
+    #     return "formatter" 
+    
+    return "formatter_node_stock_picker"

@@ -5,7 +5,7 @@ from typing import List, Dict
 import re
 
 from langchain_core.tools import tool
-from langchain_community.tools import DuckDuckGoSearchRun
+from langchain_community.tools import DuckDuckGoSearchRun, DuckDuckGoSearchResults
 
 @tool
 def get_best_index_for_volatility(target_volatility: float, test_tickers: List[str]=None) -> Dict:
@@ -120,7 +120,8 @@ def get_index_constituents(index_name: str) -> str:
     except Exception as e:
         return f"Attempted to scrape {target_url} but failed: {str(e)}, go for a duckduckgo search"
     
-search_tool = DuckDuckGoSearchRun()
+# search_tool = DuckDuckGoSearchRun()
+search_tool = DuckDuckGoSearchResults(max_results=3)
 
 @tool
 def get_stock_analytics(ticker: str, benchmark_selected: str = "SPY") -> dict:
