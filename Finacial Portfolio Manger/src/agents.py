@@ -33,6 +33,9 @@ def create_strategy(state: AgentState):
 
      IMPORTANT: 
      - You must select an index that reflect the risk and return perference of the user. 
+     - You can call the tools at most 5-10 times
+     - Do not repeatedly call the tool with similar input
+     - If a close match is found, stop and provide the answer
      """),
         MessagesPlaceholder(variable_name="chat_history"),
         ("human", "{user_input}")
