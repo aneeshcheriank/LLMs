@@ -4,7 +4,7 @@ import operator
 from langchain_core.messages import ToolMessage
 
 from src.model import get_llm
-from src.tools import index_matcher_tool_mappping, index_matcher_tool_list
+from src.tools import index_matcher_tool_mappping, index_matcher_tool_list, stock_picker_tool_list, stock_picker_tool_mapping
 from src.configuration import MAX_TOOL_CALLS
 from src.output_schema import IndexReport, StockSelectionReport
 
@@ -17,7 +17,7 @@ class AgentState(TypedDict):
     perceived_volatility: float
     actual_volatility: float
     base_index: str
-    filtered_stocks: list[str] # from python 3.9 onwards, we can use list[str] instead of List[str]
+    filtered_stocks: StockSelectionReport # from python 3.9 onwards, we can use list[str] instead of List[str]
     portfolio_weights: dict[str, float]
 
 
@@ -167,23 +167,92 @@ def stock_picker(state: AgentState):
 
      IMPORTANT: 
      - You must select stock from the base index. 
+     - you are expected to use tools to find the constituents of the index and get the stock analytics. 
+     You can use the duckduckgo search tool to find any additional information you need about the stocks.
      - The selection of the stocks should not change the overall perceived volatility of the portfolio.
      - The stock should have a postive alpha.
      - Beta sould be between match the user's risk preference.
      - The stock should have 0.25 percentile in the group of stocks in the index based on PE ratio.
      - Also use other indicator that you think is relevant.
+     - consider the investable sum when picking the stocks, as some stocks might be too expensive for 
+     the user to buy given their investable sum.
      - keep the number of stocks between 100-150 to ensure diversification.
      """),
         ("human", "investment objective: {user_input}, base index: {base_index}, target volatility: {perceived_volatility}"),
     ])
 
     llm = get_llm()
-    llm_with_structured_output = llm.with_structured_output(StockSelectionReport) # need to define a new output schema for the stock picker
-    chain = prompt | llm_with_structured_output
+    llm_with_tools = llm.bind_tools(stock_picker_tool_list) # need to define a new output schema for the stock picker
+    chain = prompt | llm_with_tools
     response = chain.invoke({
         "user_input": state["user_input"],
         "base_index": state["base_index"],
-        "perceived_volatility": state["perceived_volatility"]
+        "perceived_volatility": state["perceived_volatility"],
+        "iterations": 0 # reset the iteration counter for the stock picker agent
+        "chat_history": [] # reset the chat history for the stock picker agent, as it will have its own tool calls and responses
     })
-    output_data = response.model_dump()
-    return {"filtered_stocks": output_data["selected_stocks"]}
+
+    return {"chat_history": [response]}
+
+def tool_call_node_stock_picker(state: AgentState):
+    # this node will handle the tool call and update the state accordingly
+    last_state = state["chat_history"][-1]
+    # increment the iteration count
+    iterations = state["iterations"] + 1
+
+    print("tool_call")
+
+    tool_messages = []
+    for tool_call in last_state.tool_calls:
+
+        name = tool_call.get("name")
+        args = tool_call.get("args")
+        
+        tool_mapping = stock_picker_tool_mapping
+        if name in tool_mapping:
+            tool_response = tool_mapping[name].invoke(args) #invoke expect dictionary as input
+            tool_messages.append(
+                ToolMessage(
+                    content = str(tool_response),
+                    tool_call_id = tool_call.get("id")
+                )
+            )
+
+    return {
+        "chat_history": tool_messages, #the tool_messages is a list
+        "iterations": iterations
+    }
+
+def formatter_node(state: AgentState):
+    # 1. Convert the message history into a clean string for the reporter
+    # This prevents the "Unknown Tool" error and the "List vs Object" error.
+    context_string = ""
+    for msg in state["chat_history"]:
+        if hasattr(msg, 'content') and msg.content:
+            context_string += f"{msg.type}: {msg.content}\n"
+
+    prompt = ChatPromptTemplate.from_messages([
+        ("system",
+         """You are an expert financial reporter. 
+         Take the following context (User goals and Tool results) and 
+         generate the final IndexReport.
+         """),
+        ("human", "Here is the investment context:\n\n{context}")
+    ])
+    
+    llm = get_llm()
+    # Structured output works best when the input is plain text context
+    llm_with_structured_output = llm.with_structured_output(StockSelectionReport)
+    
+    chain = prompt | llm_with_structured_output
+    
+    # 2. Invoke with a plain string variable instead of a message list
+    response = chain.invoke({
+        "context": context_string
+    })
+    report_data = response.model_dump()
+
+    return {
+        "chat_history": [response],
+        "filtered_stocks": report_data["selected_stocks"]
+    }

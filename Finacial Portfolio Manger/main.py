@@ -5,7 +5,7 @@ if __name__ == "__main__":
 
     question = """
     what is a good investmetn stragety for a 30 year
-    old moderate risk investro with 10k to invest for
+    old moderate risk investro with 1000 to invest for
     30 years?"""
 
     workflow = build_graph()
@@ -15,4 +15,4 @@ if __name__ == "__main__":
         "iterations": 0
     })
 
-    print(response["selected_stocks"])
+    print(response["filtered_stocks"])
