@@ -6,7 +6,7 @@ from langchain_core.messages import ToolMessage
 from src.model import get_llm
 from src.tools import index_matcher_tool_mappping, index_matcher_tool_list
 from src.configuration import MAX_TOOL_CALLS
-from src.output_schema import IndexReport
+from src.output_schema import IndexReport, StockSelectionReport
 
 # Index picker agent implementation
 # Define the graph state
@@ -17,9 +17,8 @@ class AgentState(TypedDict):
     perceived_volatility: float
     actual_volatility: float
     base_index: str
-    filtered_index: str
-    portfolio_weights: dict
-    
+    filtered_stocks: list[str] # from python 3.9 onwards, we can use list[str] instead of List[str]
+    portfolio_weights: dict[str, float]
 
 
 def index_matcher(state: AgentState):
@@ -173,16 +172,18 @@ def stock_picker(state: AgentState):
      - Beta sould be between match the user's risk preference.
      - The stock should have 0.25 percentile in the group of stocks in the index based on PE ratio.
      - Also use other indicator that you think is relevant.
-     - keep the number of stocks between 5-10 to ensure diversification and manageability.
+     - keep the number of stocks between 100-150 to ensure diversification.
      """),
         ("human", "investment objective: {user_input}, base index: {base_index}, target volatility: {perceived_volatility}"),
     ])
 
     llm = get_llm()
-    chain = prompt | llm
+    llm_with_structured_output = llm.with_structured_output(StockSelectionReport) # need to define a new output schema for the stock picker
+    chain = prompt | llm_with_structured_output
     response = chain.invoke({
         "user_input": state["user_input"],
         "base_index": state["base_index"],
         "perceived_volatility": state["perceived_volatility"]
     })
-    return {"chat_history": [response]}
+    output_data = response.model_dump()
+    return {"filtered_stocks": output_data["selected_stocks"]}

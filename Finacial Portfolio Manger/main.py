@@ -14,6 +14,5 @@ if __name__ == "__main__":
         "chat_history": [],
         "iterations": 0
     })
-    last_response = response["chat_history"][-1]
 
-    print(last_response)
+    print(response["selected_stocks"])
