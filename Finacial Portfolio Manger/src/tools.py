@@ -74,6 +74,8 @@ def get_index_constituents(index_name: str) -> str:
     """
     Finds the constituent stock tickers for a given market index (e.g., 'S&P 500', 'CAC 40').
     Uses DuckDuckGo to find the correct data source and then extracts the ticker list.
+    inputs: index_name (e.g., 'S&P 500')
+    output: a string listing the tickers or an error message
     """
     search = DuckDuckGoSearchRun()
     
@@ -124,14 +126,16 @@ search_tool = DuckDuckGoSearchRun()
 # search_tool = DuckDuckGoSearchResults(max_results=3)
 
 @tool
-def get_stock_analytics(ticker: str, benchmark_selected: str = "SPY") -> dict:
+def get_stock_analytics(ticker: str, benchmark_selected: str = "SPY", riskfree_rate: float = 0.02) -> dict:
     """
     Retrieves P/E Ratio, Beta, and calculates Alpha (relative to S&P 500) for a given ticker.
     Also returns Market Cap and Dividend Yield.
     inputs: - ticker: stock ticker symbol (e.g., AAPL)
             - benchmark_selected: the index to compare against for alpha calculation (default is SPY)
+            - riskfree_rate: return from longer term government bonds to use in alpha calculation.
     output: dict with keys 'symbol', 'pe_ratio', 'beta', 'alpha_1y', 'market_cap', 'dividend_yield', 'current_price'
     """
+    ticker = ticker.replace('.', '-')  # yfinance uses '-' for tickers like BRK.B
     try:
         stock = yf.Ticker(ticker)
         info = stock.info
@@ -151,8 +155,8 @@ def get_stock_analytics(ticker: str, benchmark_selected: str = "SPY") -> dict:
             stock_return = (history.iloc[-1] / history.iloc[0]) - 1
             market_return = (benchmark.iloc[-1] / benchmark.iloc[0]) - 1
             
-            # Simple Alpha Formula: R_i - (Beta * R_m)
-            alpha = stock_return - (beta * market_return)
+            # Simple Alpha Formula: R_i - (riskfree_rate + Beta * (R_m - riskfree_rate))
+            alpha = stock_return - (riskfree_rate + beta * (market_return - riskfree_rate))
         else:
             alpha = "N/A"
 
@@ -160,9 +164,9 @@ def get_stock_analytics(ticker: str, benchmark_selected: str = "SPY") -> dict:
             "symbol": ticker.upper(),
             "pe_ratio": pe_ratio,
             "beta": beta,
-            "alpha_1y": f"{alpha:.2%}" if isinstance(alpha, float) else "N/A",
-            "market_cap": f"${market_cap:,}" if isinstance(market_cap, int) else "N/A",
-            "dividend_yield": f"{dividend_yield:.2f}%",
+            "alpha_1y": alpha if isinstance(alpha, float) else "N/A",
+            "market_cap": market_cap if isinstance(market_cap, int) else "N/A",
+            "dividend_yield": dividend_yield,
             "current_price": info.get("currentPrice", "N/A")
         }
 

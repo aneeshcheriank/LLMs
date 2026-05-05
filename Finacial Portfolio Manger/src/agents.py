@@ -132,15 +132,14 @@ def formatter_node(state: AgentState):
     context_string = ""
     for msg in state["chat_history"]:
         if hasattr(msg, 'content') and msg.content:
+            # only care about the text, not the tool_call attributes
             context_string += f"{msg.type}: {msg.content}\n"
 
     prompt = ChatPromptTemplate.from_messages([
-        ("system",
-         """You are an expert financial reporter. 
-         Take the following context (User goals and Tool results) and 
-         generate the final IndexReport.
-         """),
-        ("human", "Here is the investment context:\n\n{context}")
+        ("system", """You are an expert financial reporter. 
+         Review the following research context and extract the final details 
+         into the required structured format."""),
+        ("human", "Research Context:\n\n{context}")
     ])
     
     llm = get_llm()
@@ -154,6 +153,7 @@ def formatter_node(state: AgentState):
         "context": context_string
     })
     report_data = response.model_dump()
+    print(report_data)
 
     return {
         "chat_history": [response],
@@ -168,17 +168,17 @@ def stock_picker(state: AgentState):
     
     prompt = ChatPromptTemplate.from_messages([
         ("system",
-     """You are an expert financial portfolio manager. Your pick best stocks from the selected index.
+     """You are an expert financial portfolio manager. Your pick best stocks from the {base_index}.
 
      IMPORTANT: 
-     - You must select stock from the base index. 
-     - you are expected to use tools to find the constituents of the index and get the stock analytics. 
-     You can use the duckduckgo search tool to find any additional information you need about the stocks.
+     - you are expected to use tools to find the stocks constitues the {base_index} and get the stock analytics. 
+     - You can use the "duckduckgo search tool" and "get_index_constituents" to find the underlying stocks of the {base_index}.
      - The selection of the stocks should not change the overall perceived volatility of the portfolio.
      - The stock should have a postive alpha.
      - Beta sould be between match the user's risk preference.
      - The stock should have 0.25 percentile in the group of stocks in the index based on PE ratio.
      - Also use other indicator that you think is relevant.
+     - use "get_stock_analytics" to get the stock analysis data. don't guss these values always use the tool to get the data.
      - consider the investable sum when picking the stocks, as some stocks might be too expensive for 
      the user to buy given their investable sum.
      - keep the number of stocks between 10-15 to ensure diversification.
