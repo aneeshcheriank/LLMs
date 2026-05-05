@@ -14,7 +14,8 @@ if __name__ == "__main__":
         "chat_history": [],
         "stock_picker_history": [],
         "iterations": 0,
-        "iterations_stock_picker": 0
+        "iterations_stock_picker": 0,
+        "risk_free_rate": 0.02
     })
 
     print(response["filtered_stocks"])

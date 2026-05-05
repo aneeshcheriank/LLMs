@@ -5,7 +5,8 @@ from typing import List, Dict
 import re
 
 from langchain_core.tools import tool
-from langchain_community.tools import DuckDuckGoSearchRun, DuckDuckGoSearchResults
+from langchain_community.tools import DuckDuckGoSearchRun, DuckDuckGoSearchResults, WikipediaQueryRun
+from langchain_community.utilities import WikipediaAPIWrapper
 
 @tool
 def get_best_index_for_volatility(target_volatility: float, test_tickers: List[str]=None) -> Dict:
@@ -70,12 +71,16 @@ def index_matcher_tool_list():
 
 # tools for the stock picker agent
 @tool
-def get_index_constituents(index_name: str) -> str:
+def get_index_constituents(index_name: str) -> dict:
     """
-    Finds the constituent stock tickers for a given market index (e.g., 'S&P 500', 'CAC 40').
-    Uses DuckDuckGo to find the correct data source and then extracts the ticker list.
-    inputs: index_name (e.g., 'S&P 500')
-    output: a string listing the tickers or an error message
+    Returns the list of stock tickers that belong to a given index.
+
+    Use this tool when:
+    - You need all companies inside an index (e.g., S&P 500, STOXX 600)
+    - You are building or filtering a portfolio from an index
+
+    Input: index name (e.g., "S&P 500")
+    Output: list of ticker symbols
     """
     search = DuckDuckGoSearchRun()
     
@@ -115,15 +120,26 @@ def get_index_constituents(index_name: str) -> str:
                 clean_tickers = [t for t in clean_tickers if t.upper() == t and t.isalpha()]
                 
                 if clean_tickers:
-                    return f"Found {len(clean_tickers)} tickers for {index_name} at {target_url}: {', '.join(clean_tickers)}..."
+                    return {
+                        "index_name": index_name,
+                        "tickers": clean_tickers,
+                        "count": len(clean_tickers),
+                        "source_url": target_url
+                    }
+                
+                # f"Found {len(clean_tickers)} tickers for {index_name} at {target_url}: {', '.join(clean_tickers)}..."
         
-        return f"Found the page {target_url}, but couldn't find a clear ticker table. go for a duckduck go search"
+        return {"error": f"Found the page {target_url}, but couldn't find a clear ticker table. go for a duckduck go search"}
         
     except Exception as e:
-        return f"Attempted to scrape {target_url} but failed: {str(e)}, go for a duckduckgo search"
+        return {"error": f"Attempted to scrape {target_url} but failed: {str(e)}, go for a duckduckgo search"}
     
-search_tool = DuckDuckGoSearchRun()
-# search_tool = DuckDuckGoSearchResults(max_results=3)
+# search_tool = DuckDuckGoSearchRun()
+search_tool = DuckDuckGoSearchResults(max_results=3)
+
+wikipeida_seach_tool = WikipediaQueryRun(
+    api_wrapper=WikipediaAPIWrapper()
+)
 
 @tool
 def get_stock_analytics(ticker: str, benchmark_selected: str = "SPY", riskfree_rate: float = 0.02) -> dict:
@@ -175,8 +191,9 @@ def get_stock_analytics(ticker: str, benchmark_selected: str = "SPY", riskfree_r
 
 stock_picker_tool_mapping = {
     "get_index_constituents": get_index_constituents,
-    "duckduckgo_search": search_tool,
-    "get_stock_analytics": get_stock_analytics
+    search_tool.name: search_tool,
+    "get_stock_analytics": get_stock_analytics,
+    wikipeida_seach_tool.name: wikipeida_seach_tool
 }
 
 stock_picker_tool_list = list(stock_picker_tool_mapping.values())

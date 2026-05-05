@@ -19,6 +19,7 @@ class AgentState(TypedDict):
     perceived_volatility: float
     actual_volatility: float
     base_index: str
+    risk_free_rate: float
     filtered_stocks: StockSelectionReport # from python 3.9 onwards, we can use list[str] instead of List[str]
     portfolio_weights: dict[str, float]
 
@@ -183,7 +184,10 @@ def stock_picker(state: AgentState):
      the user to buy given their investable sum.
      - keep the number of stocks between 10-15 to ensure diversification.
      """),
-        ("human", "investment objective: {user_input}, base index: {base_index}, target volatility: {perceived_volatility}, stock picking history: {stock_picker_history}"),
+        ("human", """
+         investment objective: {user_input}, base index: {base_index}, target volatility: {perceived_volatility}, risk free rate: {risk_free_rate}.
+         stock picking history: {stock_picker_history}.
+         """),
     ])
 
     llm = get_llm()
@@ -193,6 +197,7 @@ def stock_picker(state: AgentState):
         "user_input": state["user_input"],
         "base_index": state["base_index"],
         "perceived_volatility": state["perceived_volatility"],
+        "risk_free_rate": state["risk_free_rate"],
         "stock_picker_history": state["stock_picker_history"]
     })
 
@@ -215,12 +220,20 @@ def tool_call_node_stock_picker(state: AgentState):
         args = tool_call.get("args")
         print(f"tool_call_name: {name}, args: {args}")
         
-        tool_mapping = stock_picker_tool_mapping
-        if name in tool_mapping:
-            tool_response = tool_mapping[name].invoke(args) #invoke expect dictionary as input
+        try:
+            tool_mapping = stock_picker_tool_mapping
+            if name in tool_mapping:
+                tool_response = tool_mapping[name].invoke(args) #invoke expect dictionary as input
+                tool_messages.append(
+                    ToolMessage(
+                        content = str(tool_response),
+                        tool_call_id = tool_call.get("id")
+                    )
+                )
+        except Exception as e:
             tool_messages.append(
                 ToolMessage(
-                    content = str(tool_response),
+                    content = f"Error calling tool {name} with args {args}: {str(e)}",
                     tool_call_id = tool_call.get("id")
                 )
             )
