@@ -196,6 +196,10 @@ def stock_picker(state: AgentState):
               * Moderate risk: beta between 0.8–1.2
               * High risk: beta > 1.2
           - Reasonable valuation (avoid extreme P/E ratios)
+         
+        - Index stock tickers:
+            - you have to get the constituent stocks of the index from your memory
+            - dont use tools to collect this information
         
         - Ensure basic diversification:
           - Avoid selecting too many stocks from the same sector
@@ -220,7 +224,7 @@ def stock_picker(state: AgentState):
         chain = prompt | llm
     else:
         chain = prompt | llm_with_tools
-        
+
     response = chain.invoke({
         "user_input": state["user_input"],
         "base_index": state["base_index"],
