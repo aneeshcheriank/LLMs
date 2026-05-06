@@ -3,6 +3,7 @@ import pandas as pd
 import yfinance as yf
 from typing import List, Dict
 import re
+import os
 
 from langchain_core.tools import tool
 from langchain_community.tools import DuckDuckGoSearchRun, DuckDuckGoSearchResults, WikipediaQueryRun
@@ -11,11 +12,11 @@ from langchain_community.utilities import WikipediaAPIWrapper
 @tool
 def get_best_index_for_volatility(target_volatility: float, test_tickers: List[str]=None) -> Dict:
     """
-    Fetches historical data from Yahoo Finance for a list of tickers, 
+    Fetches historical data from Yahoo Finance for a list of index tickers, 
     calculates their 1-year realized volatility, and returns the best match.
     
     :param target_volatility: Target volatility as a decimal (e.g., 0.12 for 12%)
-    :param test_tickers: A list of candidate tickers to evaluate.
+    :param test_tickers: A list of INDEX ETFs (e.g., 'SPY', 'AGG') to evaluate. Do NOT use individual company stocks.
     :return: Dict containing the best matching ticker, its actual volatility, and the error.
     """
     # Fallback to a highly diversified list across different risk profiles
@@ -151,7 +152,16 @@ def get_stock_analytics(ticker: str, benchmark_selected: str = "SPY", riskfree_r
             - riskfree_rate: return from longer term government bonds to use in alpha calculation.
     output: dict with keys 'symbol', 'pe_ratio', 'beta', 'alpha_1y', 'market_cap', 'dividend_yield', 'current_price'
     """
+
     ticker = ticker.replace('.', '-')  # yfinance uses '-' for tickers like BRK.B
+
+    # to write the stock price to a local file
+    if os.path.exists("stock_close_prices.csv"):
+        stock_close_prices = pd.read_csv("stock_close_prices.csv", index_col=0, parse_dates=True)
+    else:
+        stock_close_prices = None
+
+    # to get the stock attirbutes.
     try:
         stock = yf.Ticker(ticker)
         info = stock.info
@@ -164,18 +174,18 @@ def get_stock_analytics(ticker: str, benchmark_selected: str = "SPY", riskfree_r
         
         # 2. Calculate Alpha (Excess return over SPY)
         # We compare 1-year returns of the stock vs the benchmark
-        history = stock.history(period="1y")['Close']
-        benchmark = yf.Ticker(benchmark_selected).history(period="1y")['Close']
+        # 1. Download both at once to ensure date alignment
+        data = yf.download([ticker, benchmark_selected], period="1y")["Adj Close"].dropna()
         
-        if not history.empty and not benchmark.empty and beta != "N/A":
-            stock_return = (history.iloc[-1] / history.iloc[0]) - 1
-            market_return = (benchmark.iloc[-1] / benchmark.iloc[0]) - 1
+        if len(data) > 1:
+            # 2. Calculate returns using the same starting and ending dates
+            returns = (data.iloc[-1] / data.iloc[0]) - 1
+            stock_return = returns[ticker]
+            market_return = returns[benchmark_selected]
             
-            # Simple Alpha Formula: R_i - (riskfree_rate + Beta * (R_m - riskfree_rate))
+            # 3. Standard Alpha Formula
             alpha = stock_return - (riskfree_rate + beta * (market_return - riskfree_rate))
-        else:
-            alpha = "N/A"
-
+        
         return {
             "symbol": ticker.upper(),
             "pe_ratio": pe_ratio,
