@@ -103,30 +103,6 @@ def tool_router(state: AgentState):
     
     return "summarizer_node"
 
-# def formatter_node(state: AgentState):
-#     # this node will format the final response
-#     last_state = state["chat_history"][-1]
-    
-#     prompt = ChatPromptTemplate.from_messages([
-#         ("system",
-#      """You are an expert financial reporter. You have multiple years of experience in financial analysis and reporting. Your task is to take 
-#      the output from the previous tool calls, which includes the best matching index and its volatility, and format it into a clear and concise 
-#      report for the client. The report should include the recommended index, its actual volatility, how it compares to the client's target volatility, 
-#      and any relevant insights or recommendations based on this information.
-#      """),
-#         MessagesPlaceholder(variable_name="chat_history")
-#     ])
-
-    
-#     llm = get_llm()
-#     llm_with_structured_output = llm.with_structured_output(IndexReport)
-#     chain = prompt | llm_with_structured_output
-#     response = chain.invoke({
-#         "chat_history": [last_state]
-#     })
-
-#     return {"chat_history": [response]}
-
 def summarizer_node(state: AgentState):
     # this node will summarize the tool calls and provide a final answer
 
@@ -240,7 +216,11 @@ def stock_picker(state: AgentState):
 
     llm = get_llm()
     llm_with_tools = llm.bind_tools(stock_picker_tool_list) # need to define a new output schema for the stock picker
-    chain = prompt | llm_with_tools
+    if state["iterations_stock_picker"] >= 5:
+        chain = prompt | llm
+    else:
+        chain = prompt | llm_with_tools
+        
     response = chain.invoke({
         "user_input": state["user_input"],
         "base_index": state["base_index"],
@@ -285,6 +265,8 @@ def tool_call_node_stock_picker(state: AgentState):
                     tool_call_id = tool_call.get("id")
                 )
             )
+    # to test the tool response
+    print(tool_messages)
 
     return {
         "stock_picker_history": tool_messages, #the tool_messages is a list
