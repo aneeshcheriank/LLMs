@@ -220,10 +220,11 @@ def stock_picker(state: AgentState):
 
     llm = get_llm()
     llm_with_tools = llm.bind_tools(stock_picker_tool_list) # need to define a new output schema for the stock picker
-    if state["iterations_stock_picker"] >= 5:
-        chain = prompt | llm
-    else:
-        chain = prompt | llm_with_tools
+    chain = prompt | llm_with_tools
+    # if state["iterations_stock_picker"] >= 5:
+    #     chain = prompt | llm
+    # else:
+    #     chain = prompt | llm_with_tools
 
     response = chain.invoke({
         "user_input": state["user_input"],
