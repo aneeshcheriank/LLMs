@@ -99,9 +99,9 @@ def tool_router(state: AgentState):
 
     # check the max_iterations
     if state["iterations"] >= MAX_TOOL_CALLS:
-        return "formatter" 
+        return "summarizer_node" 
     
-    return "formatter"
+    return "summarizer_node"
 
 # def formatter_node(state: AgentState):
 #     # this node will format the final response
@@ -127,14 +127,42 @@ def tool_router(state: AgentState):
 
 #     return {"chat_history": [response]}
 
+def summarizer_node(state: AgentState):
+    # this node will summarize the tool calls and provide a final answer
+
+    prompt = ChatPromptTemplate.from_messages([
+        ("system",
+     """You are an expert financial reporter. You have multiple years of experience in financial analysis and reporting. Your task is to take 
+     the output from the previous tool calls, which includes the best matching index and its volatility, and format it into a clear and concise 
+     report for the client. The report should include the recommended index, its actual volatility, how it compares to the client's target volatility, 
+     and any relevant insights or recommendations based on this information.
+     """),
+        MessagesPlaceholder(variable_name="chat_history")
+    ])
+
+    
+    llm = get_llm()
+    chain = prompt | llm
+    response = chain.invoke({
+        "chat_history": state["chat_history"]
+    })
+
+    return {"chat_history": [response]}    
+
 def formatter_node(state: AgentState):
-    # 1. Convert the message history into a clean string for the reporter
-    # This prevents the "Unknown Tool" error and the "List vs Object" error.
-    context_string = ""
-    for msg in state["chat_history"]:
-        if hasattr(msg, 'content') and msg.content:
-            # only care about the text, not the tool_call attributes
-            context_string += f"{msg.type}: {msg.content}\n"
+    # # 1. Convert the message history into a clean string for the reporter
+    # # This prevents the "Unknown Tool" error and the "List vs Object" error.
+    # context_string = ""
+    # for msg in state["chat_history"]:
+    #     # Ensure we capture text from AI messages and the actual data from Tool messages
+    #     if msg.type == "ai" and msg.content:
+    #         context_string += f"AI Thought: {msg.content}\n"
+    #     elif msg.type == "tool":
+    #         context_string += f"Tool Result: {msg.content}\n"
+    #     # If the user mentioned a target volatility, include that too
+    #     elif msg.type == "human":
+    #         context_string += f"User Request: {msg.content}\n"
+    context_string = state["chat_history"][-1].content if state["chat_history"] else ""
 
     prompt = ChatPromptTemplate.from_messages([
         ("system", """You are an expert financial reporter. 
@@ -168,22 +196,42 @@ def formatter_node(state: AgentState):
 def stock_picker(state: AgentState):
     
     prompt = ChatPromptTemplate.from_messages([
-        ("system",
-     """You are an expert financial portfolio manager. Your pick best stocks from the {base_index}.
+        ("system","""
+        You are a financial equity screener.
 
-     IMPORTANT: 
-     - you are expected to use tools to find the stocks constitues the {base_index} and get the stock analytics. 
-     - You can use the "duckduckgo search tool" and "get_index_constituents" to find the underlying stocks of the {base_index}.
-     - The selection of the stocks should not change the overall perceived volatility of the portfolio.
-     - The stock should have a postive alpha.
-     - Beta sould be between match the user's risk preference.
-     - The stock should have 0.25 percentile in the group of stocks in the index based on PE ratio.
-     - Also use other indicator that you think is relevant.
-     - use "get_stock_analytics" to get the stock analysis data. don't guss these values always use the tool to get the data.
-     - consider the investable sum when picking the stocks, as some stocks might be too expensive for 
-     the user to buy given their investable sum.
-     - keep the number of stocks between 10-15 to ensure diversification.
-     """),
+        Your task is to select high-quality stocks from the given index: {base_index}, 
+        based on the user's risk profile and investment objective.
+        
+        INPUT:
+        - Investment objective: {user_input}
+        - Target volatility: {perceived_volatility}
+        
+        INSTRUCTIONS:
+        
+        1. Use the tool `get_index_constituents` to retrieve stocks in the index.
+        2. Use `get_stock_analytics` to fetch real financial data. Never guess values.
+        
+        SELECTION CRITERIA:
+        
+        - Prefer stocks with:
+          - Prefer positive alpha
+          - Beta aligned with target volatility:
+              * Low risk: beta < 0.8
+              * Moderate risk: beta between 0.8–1.2
+              * High risk: beta > 1.2
+          - Reasonable valuation (avoid extreme P/E ratios)
+        
+        - Ensure basic diversification:
+          - Avoid selecting too many stocks from the same sector
+          - Limit highly correlated stocks (e.g., too many semiconductors)
+        
+        - Select a manageable number of stocks:
+          - Between 5–8 stocks (considering small investment size)
+        
+        OUTPUT:
+        Return a list of selected stocks with their analytics.
+        Do not calculate weights.
+        """),
         ("human", """
          investment objective: {user_input}, base index: {base_index}, target volatility: {perceived_volatility}, risk free rate: {risk_free_rate}.
          stock picking history: {stock_picker_history}.

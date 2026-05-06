@@ -3,6 +3,8 @@ from src.agents import stock_picker
 
 if __name__ == "__main__":
 
+    stocks_close_prices = None
+
     question = """
     what is a good investmetn stragety for a 30 year
     old moderate risk investro with 1000 to invest for
@@ -19,3 +21,5 @@ if __name__ == "__main__":
     })
 
     print(response["filtered_stocks"])
+
+    print(stocks_close_prices)
