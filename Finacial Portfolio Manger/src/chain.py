@@ -1,7 +1,7 @@
 from langgraph.graph import StateGraph, START, END
 
 from src.agents import (AgentState,index_matcher, tool_call_node, tool_router, summarizer_node, formatter_node, stock_picker, 
-                        tool_call_node_stock_picker, formatter_node_stock_picker, tool_router_stock_picker)
+                        tool_call_node_stock_picker, formatter_node_stock_picker, tool_router_stock_picker, portfolio_optimizer)
 
 def build_graph():
     workflow = StateGraph(AgentState)
@@ -11,10 +11,14 @@ def build_graph():
     workflow.add_node("tool_call", tool_call_node)
     workflow.add_node("summarizer_node", summarizer_node)
     workflow.add_node("formatter", formatter_node)
+    
     # stock picker
     workflow.add_node("stock_picker", stock_picker)
     workflow.add_node("tool_call_node_stock_picker", tool_call_node_stock_picker)
     workflow.add_node("formatter_node_stock_picker", formatter_node_stock_picker)
+
+    # portfolio optimizer
+    workflow.add_node("portfolio_optimizer", portfolio_optimizer)
 
 
     # edges
@@ -23,7 +27,8 @@ def build_graph():
     workflow.add_edge("summarizer_node", "formatter")
     workflow.add_edge("formatter", "stock_picker")
     workflow.add_edge("tool_call_node_stock_picker", "stock_picker")
-    workflow.add_edge("formatter_node_stock_picker", END)
+    workflow.add_edge("formatter_node_stock_picker", "portfolio_optimizer")
+    workflow.add_edge("portfolio_optimizer", END)
 
     # conditional edge
     workflow.add_conditional_edges(

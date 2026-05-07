@@ -4,12 +4,14 @@ from scipy.optimize import minimize
 from langchain_core.tools import tool
 
 @tool
-def optimize_portfolio_weights(returns_data: dict, sector_map: dict, target_vol: float):
+def optimize_portfolio_weights(tickers: list[str], target_vol: float):
     """
     Solves for weights that match a target volatility while enforcing:
-    1. 5% max weight per individual stock.
-    2. 20% max weight per sector.
-    3. Weights must sum to 100%.
+    inputs:
+        tickers: stock tickers (to download the return values)
+        target_volatility: volatility of the portfolio (standard deviation)
+    return:
+        final_weights: a dictionary shows the ticker and the prepotion of that stock in the portfolio
     """
     # Convert dict back to DataFrame for math
     returns_df = pd.DataFrame(returns_data)

@@ -5,6 +5,7 @@ from langchain_core.messages import ToolMessage
 
 from src.model import get_llm
 from src.tools import index_matcher_tool_mappping, index_matcher_tool_list, stock_picker_tool_list, stock_picker_tool_mapping
+from src.temp import optimize_portfolio_weights
 from src.configuration import MAX_TOOL_CALLS
 from src.output_schema import IndexReport, StockSelectionReport
 
@@ -15,6 +16,7 @@ class AgentState(TypedDict):
 
     chat_history: Annotated[list, operator.add]
     stock_picker_history: Annotated[list, operator.add]
+    portfolio_optimizer_history: Annotated[list, operator.add]
 
     perceived_volatility: float
     actual_volatility: float
@@ -324,3 +326,30 @@ def tool_router_stock_picker(state: AgentState):
     #     return "formatter" 
     
     return "formatter_node_stock_picker"
+
+def portfolio_optimizer(state: AgentState):
+    prompt = ChatPromptTemplate(
+        ("system", """
+        - You are an efficient portofolio manger and has more than 10 years of experience in building efficent portfolios.
+        - You are equpped with tools "optimize_portfolio_weights" to optimize the stock weights.
+        - Your duity is to select the number of stocks and tickers based on the investable sum from 
+         investment objective: {user_objective} and use the tool to find the optimzed weights
+        - selected stocks: {selected_stocks}
+         """
+         ),
+         MessagesPlaceholder(variable_name="portfolio_optimizer_history")
+    )
+
+    llm = get_llm()
+    # llm_with_tools = llm.bind_tools(optimize_portfolio_weights)
+
+    chain = prompt | llm
+    response = chain.invoke({
+        "selected_stocks": state["filtered_stocks"],
+        "portfolio_optimizer_history": state["portfolio_optimizer_history"],
+        "user_objective": state["user_input"]
+    })
+
+    return{
+        "portfolio_optimizer_history": response
+    }
