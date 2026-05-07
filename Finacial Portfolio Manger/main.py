@@ -11,11 +11,15 @@ if __name__ == "__main__":
     workflow = build_graph()
     response = workflow.invoke({
         "user_input": question,
+
         "chat_history": [],
         "stock_picker_history": [],
+        "portfolio_optimizer_history": [],
+
         "iterations": 0,
         "iterations_stock_picker": 0,
+        "iterations_portfolio_optimizer": 0,
         "risk_free_rate": 0.02
     })
 
-    print(response["filtered_stocks"])
+    print(response["portfolio_optimizer_history"][-1])

@@ -2,21 +2,56 @@ import numpy as np
 import pandas as pd
 from scipy.optimize import minimize
 from langchain_core.tools import tool
+import yfinance as yf
+
+def get_stock_info(tickers):
+    ticker_map = {}
+    prices = pd.DataFrame()
+    for ticker in tickers:
+        yf_ticker = yf.Ticker(ticker)
+        ticker_map[ticker] = yf_ticker.info["sector"]
+    
+        price = yf.download(ticker, period="1y")
+        if "Adj Close" in price.columns:
+            data = price["Adj Close"]
+        elif "Close" in price.columns:
+            data = price["Close"]
+        else:
+            next
+    
+        if len(prices.columns) == 0:
+            prices = data
+        else:
+            prices = prices.join(
+                data,
+                how = "outer"
+            )
+    
+    prices = prices.dropna()
+    daily_returns = prices.pct_change()
+
+    return {
+        "sector_mapping": ticker_map,
+        "daily_returns": daily_returns.dropna()
+    }
 
 @tool
-def optimize_portfolio_weights(tickers: list[str], target_vol: float):
+def optimize_portfolio_weights(tickers: list[str], target_vol: float)->dict:
     """
-    Solves for weights that match a target volatility while enforcing:
-    inputs:
-        tickers: stock tickers (to download the return values)
-        target_volatility: volatility of the portfolio (standard deviation)
-    return:
-        final_weights: a dictionary shows the ticker and the prepotion of that stock in the portfolio
+    Solves for weights that match a target volatility.
+    
+    Args:
+        tickers: A list of stock ticker symbols.
+        target_vol: The target portfolio volatility (standard deviation) as a decimal.
+        
+    Returns:
+        A dictionary containing the 'final_weights' for each ticker.
     """
     # Convert dict back to DataFrame for math
-    returns_df = pd.DataFrame(returns_data)
-    tickers = returns_df.columns
     n = len(tickers)
+    data = get_stock_info(tickers)
+    returns_df = data["daily_returns"]
+    sector_map = data["sector_mapping"]
     
     # Calculate Covariance Matrix (Annualized)
     cov_matrix = returns_df.cov() * 252
@@ -33,7 +68,7 @@ def optimize_portfolio_weights(tickers: list[str], target_vol: float):
     
     # Sector Constraints: Sum of weights in each sector <= 0.20
     for sector, sector_tickers in sector_map.items():
-        indices = [tickers.get_loc(t) for t in sector_tickers if t in tickers]
+        indices = [tickers.index(t) for t in sector_tickers if t in tickers]
         if indices:
             constraints.append({
                 'type': 'ineq', 
@@ -55,4 +90,12 @@ def optimize_portfolio_weights(tickers: list[str], target_vol: float):
 
     # Return clean dictionary of {Ticker: Weight}
     final_weights = {tickers[i]: round(result.x[i], 4) for i in range(n)}
-    return final_weights
+    return {
+        "final_weights": final_weights
+        }
+
+portfolio_optimizer_tool_mapping = {
+    "optimize_portfolio_weights": optimize_portfolio_weights
+}
+
+portfolio_optimizer_tool_list = list(portfolio_optimizer_tool_mapping.values())

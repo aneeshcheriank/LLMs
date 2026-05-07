@@ -17,3 +17,9 @@ class Stock(BaseModel):
 class StockSelectionReport(BaseModel):
     base_index: str = Field(description="The ticker symbol of the base index from which stocks were selected, e.g., SPY.")
     selected_stocks: List[Stock] = Field(description="A list of selected stocks with their respective alpha, beta, and PE ratio.")
+
+# output schema for portfolio optimizer
+class stock_weight(BaseModel):
+    ticker: str = Field(description="The ticker symbol of the selected stock, e.g., AAPL.")
+    sector: str = Field(description="The sector at which the stock belongs (e.g. Technology, Finance)")
+    ratio: float = Field(description="Percentage of the investable sum advised to invest in this stock e.g. 0.05")

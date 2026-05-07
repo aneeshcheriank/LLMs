@@ -2,12 +2,14 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from typing import TypedDict, Annotated
 import operator
 from langchain_core.messages import ToolMessage
+from langgraph.graph import END
 
 from src.model import get_llm
 from src.tools import index_matcher_tool_mappping, index_matcher_tool_list, stock_picker_tool_list, stock_picker_tool_mapping
 from src.temp import optimize_portfolio_weights
 from src.configuration import MAX_TOOL_CALLS
-from src.output_schema import IndexReport, StockSelectionReport
+from src.output_schema import IndexReport, StockSelectionReport, PortfolioReport
+from src.temp import portfolio_optimizer_tool_mapping, portfolio_optimizer_tool_list
 
 # Index picker agent implementation
 # Define the graph state
@@ -23,10 +25,11 @@ class AgentState(TypedDict):
     base_index: str
     risk_free_rate: float
     filtered_stocks: StockSelectionReport # from python 3.9 onwards, we can use list[str] instead of List[str]
-    portfolio_weights: dict[str, float]
+    portfolio: PortfolioReport
 
     iterations: int
     iterations_stock_picker: int
+    iterations_portfolio_optimizer: int
 
 
 def index_matcher(state: AgentState):
@@ -328,7 +331,7 @@ def tool_router_stock_picker(state: AgentState):
     return "formatter_node_stock_picker"
 
 def portfolio_optimizer(state: AgentState):
-    prompt = ChatPromptTemplate(
+    prompt = ChatPromptTemplate.from_messages([
         ("system", """
         - You are an efficient portofolio manger and has more than 10 years of experience in building efficent portfolios.
         - You are equpped with tools "optimize_portfolio_weights" to optimize the stock weights.
@@ -338,12 +341,12 @@ def portfolio_optimizer(state: AgentState):
          """
          ),
          MessagesPlaceholder(variable_name="portfolio_optimizer_history")
-    )
+    ])
 
     llm = get_llm()
-    # llm_with_tools = llm.bind_tools(optimize_portfolio_weights)
+    llm_with_tools = llm.bind_tools(portfolio_optimizer_tool_list)
 
-    chain = prompt | llm
+    chain = prompt | llm_with_tools
     response = chain.invoke({
         "selected_stocks": state["filtered_stocks"],
         "portfolio_optimizer_history": state["portfolio_optimizer_history"],
@@ -351,5 +354,103 @@ def portfolio_optimizer(state: AgentState):
     })
 
     return{
-        "portfolio_optimizer_history": response
+        "portfolio_optimizer_history": [response]
     }
+
+def tool_call_node_portfolio_optimizer(state: AgentState):
+    # this node will handle the tool call and update the state accordingly
+    last_state = state["portfolio_optimizer_history"][-1]
+    # increment the iteration count
+    iterations = state["iterations_portfolio_optimizer"] + 1
+
+    print(f"tool_call: {iterations}")
+
+    tool_messages = []
+    for tool_call in last_state.tool_calls:
+
+        name = tool_call.get("name")
+        args = tool_call.get("args")
+        print(f"tool_call_name: {name}, args: {args}")
+        
+        try:
+            tool_mapping = portfolio_optimizer_tool_mapping
+            if name in tool_mapping:
+                tool_response = tool_mapping[name].invoke(args) #invoke expect dictionary as input
+                tool_messages.append(
+                    ToolMessage(
+                        content = str(tool_response),
+                        tool_call_id = tool_call.get("id")
+                    )
+                )
+        except Exception as e:
+            tool_messages.append(
+                ToolMessage(
+                    content = f"Error calling tool {name} with args {args}: {str(e)}",
+                    tool_call_id = tool_call.get("id")
+                )
+            )
+    # to test the tool response
+    # print(tool_messages)
+
+    return {
+        "portfolio_optimizer_history": tool_messages, #the tool_messages is a list
+        "iterations_portfolio_optimizer": iterations
+    }
+
+def tool_router_portfolio_optimizer(state: AgentState):
+    last_state = state["portfolio_optimizer_history"][-1]
+    if last_state.tool_calls:
+         return "tool_call_portfolio_optimizer"
+    
+    return "summarizer_portfolio_optimizer"
+
+def summarizer_portfolio_optimizer(state: AgentState):
+    # this node will summarize the tool calls and provide a final answer
+
+    prompt = ChatPromptTemplate.from_messages([
+        ("system",
+     """You are an expert financial reporter. You have multiple years of experience in financial analysis and reporting. Your task is to take 
+     the output from the previous tool calls, which messages to find the best portfolio weights for a target volatility.
+     - Summarize the details (do not include extra information) for futher processing.
+     - capture all informations
+     """),
+        MessagesPlaceholder(variable_name="chat_history")
+    ])
+
+    
+    llm = get_llm()
+    chain = prompt | llm
+    response = chain.invoke({
+        "chat_history": state["portfolio_optimizer_history"]
+    })
+
+    return {"portfolio_optimizer_history": [response]}   
+
+def formatter_node_portfolio(state: AgentState):
+   
+   last_message = state["portfolio_optimizer_history"][-1]
+
+   prompt = ChatPromptTemplate.from_messages([
+       ("system",
+        """You are an expert financial reporter. 
+        Take the following context (User goals and Tool results) and 
+        generate the final IndexReport.
+        """),
+       ("human", "Here is the investment context:\n\n{context}")
+   ])
+   
+   llm = get_llm()
+   # Structured output works best when the input is plain text context
+   llm_with_structured_output = llm.with_structured_output(PortfolioReport)
+   
+   chain = prompt | llm_with_structured_output
+   
+   # 2. Invoke with a plain string variable instead of a message list
+   response = chain.invoke({
+       "context": last_message.content
+   })
+   report_data = response.model_dump()
+   return {
+       "stock_picker_history": [response],
+       "portfolio": report_data
+   }
