@@ -19,7 +19,15 @@ class StockSelectionReport(BaseModel):
     selected_stocks: List[Stock] = Field(description="A list of selected stocks with their respective alpha, beta, and PE ratio.")
 
 # output schema for portfolio optimizer
-class stock_weight(BaseModel):
+class StockWeight(BaseModel):
     ticker: str = Field(description="The ticker symbol of the selected stock, e.g., AAPL.")
     sector: str = Field(description="The sector at which the stock belongs (e.g. Technology, Finance)")
     ratio: float = Field(description="Percentage of the investable sum advised to invest in this stock e.g. 0.05")
+
+class PortfolioReport(BaseModel):
+    portfolio: List[StockWeight] = Field(description= "List of stock selected for the portfolio along with their prepotion")
+    investment_sum: str = Field(description="The sum user plan to invest e.g. 1000 Euros")
+    investment_period: str = Field(description="The period at which the user plan to invest e.g. 5 years")
+    estimated_annual_return: float = Field(description="The total value of the investment at the end of the investment period e.g. 10000 Euro")
+    projected_sum_at_the_end: float = Field(description="Expected annual return e.g. .07")
+    
