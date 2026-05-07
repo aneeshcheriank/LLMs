@@ -168,7 +168,7 @@ def get_stock_analytics(ticker: str, benchmark_selected: str = "SPY", riskfree_r
         
         # 1. Fetch direct metrics from .info
         pe_ratio = info.get("trailingPE", "N/A")
-        beta = info.get("beta", "N/A")
+        # beta = info.get("beta", "N/A")
         market_cap = info.get("marketCap", "N/A")
         dividend_yield = info.get("dividendYield", 0) * 100
         
@@ -182,7 +182,16 @@ def get_stock_analytics(ticker: str, benchmark_selected: str = "SPY", riskfree_r
         else:
             data = data["Close"].dropna()
         
-        if len(data) > 1:
+        if len(data) > 20:
+            # calculate beta
+            return_data = data.pct_change().dropna()
+            stock_daily_returns = return_data[ticker]
+            benchmark_daily_returns = return_data[benchmark_selected]
+            covarience_matrix = np.cov(stock_daily_returns, benchmark_daily_returns)
+            covarience = covarience_matrix[0, 1]
+            market_varience = covarience_matrix[1, 1]
+            beta = covarience/market_varience
+
             # 2. Calculate returns using the same starting and ending dates
             returns = (data.iloc[-1] / data.iloc[0]) - 1
             stock_return = returns[ticker]
@@ -190,6 +199,10 @@ def get_stock_analytics(ticker: str, benchmark_selected: str = "SPY", riskfree_r
             
             # 3. Standard Alpha Formula
             alpha = stock_return - (riskfree_rate + beta * (market_return - riskfree_rate))
+        else:
+            return{
+                "error": "not enough data points to calculate alpha and beta"
+            }
         
         return {
             "symbol": ticker.upper(),

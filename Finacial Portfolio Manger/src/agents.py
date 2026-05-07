@@ -190,7 +190,7 @@ def stock_picker(state: AgentState):
         SELECTION CRITERIA:
         
         - Prefer stocks with:
-          - Prefer positive alpha
+          - postive alpha
           - Beta aligned with target volatility:
               * Low risk: beta < 0.8
               * Moderate risk: beta between 0.8–1.2
@@ -206,7 +206,7 @@ def stock_picker(state: AgentState):
           - Limit highly correlated stocks (e.g., too many semiconductors)
         
         - Select a manageable number of stocks:
-          - Between 5–8 stocks (considering small investment size)
+          - Between 10-15 stocks (considering small investment size)
         
         OUTPUT:
         Return a list of selected stocks with their analytics.
@@ -271,7 +271,7 @@ def tool_call_node_stock_picker(state: AgentState):
                 )
             )
     # to test the tool response
-    print(tool_messages)
+    # print(tool_messages)
 
     return {
         "stock_picker_history": tool_messages, #the tool_messages is a list
