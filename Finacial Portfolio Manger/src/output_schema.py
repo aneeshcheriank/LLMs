@@ -26,8 +26,8 @@ class StockWeight(BaseModel):
 
 class PortfolioReport(BaseModel):
     portfolio: List[StockWeight] = Field(description= "List of stock selected for the portfolio along with their prepotion")
-    investment_sum: str = Field(description="The sum user plan to invest e.g. 1000 Euros")
-    investment_period: str = Field(description="The period at which the user plan to invest e.g. 5 years")
-    estimated_annual_return: float = Field(description="The total value of the investment at the end of the investment period e.g. 10000 Euro")
-    projected_sum_at_the_end: float = Field(description="Expected annual return e.g. .07")
+    # investment_sum: str = Field(description="The sum user plan to invest e.g. 1000 Euros")
+    # investment_period: str = Field(description="The period at which the user plan to invest e.g. 5 years")
+    # estimated_annual_return: float = Field(description="The total value of the investment at the end of the investment period e.g. 10000 Euro")
+    # projected_sum_at_the_end: float = Field(description="Expected annual return e.g. .07")
     

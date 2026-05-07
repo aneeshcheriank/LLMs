@@ -35,7 +35,7 @@ def build_graph():
     workflow.add_edge("formatter_node_stock_picker", "portfolio_optimizer")
     workflow.add_edge("tool_call_portfolio_optimizer", "portfolio_optimizer")
     workflow.add_edge("summarizer_portfolio_optimizer", "formatter_portfolio")
-    workflow.add_edge("format_portfolio", END)
+    workflow.add_edge("formatter_portfolio", END)
 
     # conditional edge
     workflow.add_conditional_edges(

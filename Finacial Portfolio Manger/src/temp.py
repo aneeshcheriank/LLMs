@@ -5,95 +5,85 @@ from langchain_core.tools import tool
 import yfinance as yf
 
 def get_stock_info(tickers):
+    # 1. Fetch info for sectors
     ticker_map = {}
-    prices = pd.DataFrame()
-    for ticker in tickers:
-        yf_ticker = yf.Ticker(ticker)
-        ticker_map[ticker] = yf_ticker.info["sector"]
+    for t in tickers:
+        try:
+            ticker_map[t] = yf.Ticker(t).info.get("sector", "Unknown")
+        except:
+            ticker_map[t] = "Unknown"
     
-        price = yf.download(ticker, period="1y")
-        if "Adj Close" in price.columns:
-            data = price["Adj Close"]
-        elif "Close" in price.columns:
-            data = price["Close"]
-        else:
-            next
+    # 2. Download all price data at once (Faster & Aligned)
+    data = yf.download(tickers, period="1y", progress=False)
     
-        if len(prices.columns) == 0:
-            prices = data
-        else:
-            prices = prices.join(
-                data,
-                how = "outer"
-            )
-    
+    # Handle both MultiIndex and Single Ticker cases
+    if "Adj Close" in data.columns:
+        prices = data["Adj Close"]
+    else:
+        prices = data["Close"]
+        
     prices = prices.dropna()
-    daily_returns = prices.pct_change()
+    daily_returns = prices.pct_change().dropna()
 
     return {
         "sector_mapping": ticker_map,
-        "daily_returns": daily_returns.dropna()
+        "daily_returns": daily_returns
     }
 
 @tool
-def optimize_portfolio_weights(tickers: list[str], target_vol: float)->dict:
+def optimize_portfolio_weights(tickers: list[str], target_vol: float) -> dict:
     """
-    Solves for weights that match a target volatility.
-    
-    Args:
-        tickers: A list of stock ticker symbols.
-        target_vol: The target portfolio volatility (standard deviation) as a decimal.
+    Solves for weights that match target volatility and maximize returns.
+    """
+    try:
+        n = len(tickers)
+        if n == 0: return {"error": "No tickers provided"}
+
+        data = get_stock_info(tickers)
+        returns_df = data["daily_returns"]
+        expected_returns = data["expected_returns"]
+        cov_matrix = returns_df.cov() * 252
         
-    Returns:
-        A dictionary containing the 'final_weights' for each ticker.
-    """
-    # Convert dict back to DataFrame for math
-    n = len(tickers)
-    data = get_stock_info(tickers)
-    returns_df = data["daily_returns"]
-    sector_map = data["sector_mapping"]
-    
-    # Calculate Covariance Matrix (Annualized)
-    cov_matrix = returns_df.cov() * 252
-    
-    # 1. Objective Function: Minimize the difference from target volatility
-    def objective(weights):
-        portfolio_vol = np.sqrt(np.dot(weights.T, np.dot(cov_matrix, weights)))
-        return (portfolio_vol - target_vol)**2
+        def objective(weights):
+            portfolio_vol = np.sqrt(np.dot(weights.T, np.dot(cov_matrix, weights)))
+            portfolio_return = np.dot(weights, expected_returns)
+            
+            # NORMALIZED OBJECTIVE:
+            # We use a higher scale (100) for vol diff to ensure risk target is met,
+            # but we heavily weight the return to force the solver to shift positions.
+            return 100 * (portfolio_vol - target_vol)**2 - (portfolio_return * 2)
 
-    # 2. Constraints
-    constraints = [
-        {'type': 'eq', 'fun': lambda x: np.sum(x) - 1.0}  # Weights must sum to 1
-    ]
-    
-    # Sector Constraints: Sum of weights in each sector <= 0.20
-    for sector, sector_tickers in sector_map.items():
-        indices = [tickers.index(t) for t in sector_tickers if t in tickers]
-        if indices:
-            constraints.append({
-                'type': 'ineq', 
-                'fun': lambda x, idx=indices: 0.20 - np.sum(x[idx]) 
-            })
+        constraints = [{'type': 'eq', 'fun': lambda x: np.sum(x) - 1.0}]
+        
+        # Widen bounds: Min 1%, Max 35%
+        bounds = tuple((0.01, 0.35) for _ in range(n))
+        
+        # FIX: RANDOMIZED INITIAL GUESS
+        # Starting away from 1/N forces the solver to recalculate paths.
+        np.random.seed(42) # For consistency in testing
+        random_guess = np.random.dirichlet(np.ones(n), size=1)[0]
 
-    # 3. Individual Bounds: 0% to 5% per stock
-    bounds = tuple((0.0, 0.05) for _ in range(n))
-    
+        result = minimize(objective, random_guess, method='SLSQP', bounds=bounds, constraints=constraints)
 
-    # 4. Initial Guess: Equal weighting
-    init_guess = np.array([1.0/n] * n)
+        if not result.success:
+            return {"error": f"Optimization failed: {result.message}"}
 
-    # 5. Run Solver
-    result = minimize(objective, init_guess, method='SLSQP', bounds=bounds, constraints=constraints)
+        # Format output
+        final_weights = {tickers[i]: round(float(result.x[i]), 4) for i in range(n)}
+        
+        opt_weights = np.array(list(final_weights.values()))
+        final_vol = np.sqrt(np.dot(opt_weights.T, np.dot(cov_matrix, opt_weights)))
+        final_ret = np.dot(opt_weights, expected_returns)
 
-    if not result.success:
-        return f"Optimization failed: {result.message}"
-
-    # Return clean dictionary of {Ticker: Weight}
-    final_weights = {tickers[i]: round(result.x[i], 4) for i in range(n)}
-    return {
-        "final_weights": final_weights
+        return {
+            "final_weights": final_weights,
+            "expected_annual_return": round(float(final_ret), 4),
+            "expected_annual_volatility": round(float(final_vol), 4)
         }
 
+    except Exception as e:
+        return {"error": f"Tool failed: {str(e)}"}
+    
 portfolio_optimizer_tool_mapping = {
     "optimize_portfolio_weights": optimize_portfolio_weights
 }

@@ -211,7 +211,7 @@ def stock_picker(state: AgentState):
           - Limit highly correlated stocks (e.g., too many semiconductors)
         
         - Select a manageable number of stocks:
-          - Between 10-15 stocks (considering small investment size)
+          - Between 30-40 stocks (considering small investment size)
         
         OUTPUT:
         Return a list of selected stocks with their analytics.
@@ -333,14 +333,35 @@ def tool_router_stock_picker(state: AgentState):
 def portfolio_optimizer(state: AgentState):
     prompt = ChatPromptTemplate.from_messages([
         ("system", """
-        - You are an efficient portofolio manger and has more than 10 years of experience in building efficent portfolios.
-        - You are equpped with tools "optimize_portfolio_weights" to optimize the stock weights.
-        - Your duity is to select the number of stocks and tickers based on the investable sum from 
-         investment objective: {user_objective} and use the tool to find the optimzed weights
-        - selected stocks: {selected_stocks}
-         """
-         ),
-         MessagesPlaceholder(variable_name="portfolio_optimizer_history")
+        ### ROLE
+        You are a Senior Portfolio Manager specializing in Quantitative Asset Allocation. You have 10+ years of experience in Modern Portfolio Theory and Risk Parity strategies.
+    
+        ### OBJECTIVE
+        Your goal is to allocate an investable sum across a curated list of stocks to meet the client's objective: "{user_objective}".
+         
+        ### No of stocks
+        - 1000 $: 5-10 stocks
+        - 10000 $: 10-20 stocks
+        - 100000 $: 20-40 stocks
+    
+        ### INPUT DATA
+        - Selected Stocks & Analytics: {selected_stocks}
+    
+        ### OPERATIONAL GUIDELINES
+        1. **Weight Optimization**: Use the `optimize_portfolio_weights` tool. Pass the list of tickers from the selected stocks and the target volatility (as a decimal) derived from the user objective.
+        2. **Concentration Risk**: Ensure no single stock exceeds 10% of the portfolio to maintain diversification.
+        3. **Minimum Position Size**: Do not allocate weights less than 2% ($20) to any single stock, as small positions are inefficient.
+        4. **Risk Alignment**: 
+            - For Low Risk: Target Volatility ~0.05 - 0.08
+            - For Moderate Risk: Target Volatility ~0.09 - 0.13
+            - For High Risk: Target Volatility ~0.14 - 0.20
+    
+        ### EXECUTION FLOW
+        - First, call `optimize_portfolio_weights` with the appropriate parameters.
+        - Once you receive the tool output, verify that the weights sum to 100%.
+        - If the tool fails, suggest an equal-weighted portfolio as a fallback and explain why.
+        """),
+        MessagesPlaceholder(variable_name="portfolio_optimizer_history")
     ])
 
     llm = get_llm()
@@ -451,6 +472,6 @@ def formatter_node_portfolio(state: AgentState):
    })
    report_data = response.model_dump()
    return {
-       "stock_picker_history": [response],
+       "portfolio_optimizer_history": [response],
        "portfolio": report_data
    }
