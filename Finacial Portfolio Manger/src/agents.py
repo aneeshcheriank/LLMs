@@ -31,7 +31,7 @@ def index_matcher(state: AgentState):
     
     prompt = ChatPromptTemplate.from_messages([
         ("system",
-     """You are an expert financial portfolio manager. Your task is to match a client's risk and investment profile to the most appropriate index.
+     """You are an expert financial portfolio manager. Your task is to match a client's risk and investment profile to the most appropriate index not ETFs or Stocks.
      you are expected to use tools to find the best index for a volatility target. You will be provided with a client's input describing their 
      investment goals and risk tolerance, and you must convert that into a target volatility. Then, using the get_best_index_for_volatility tool, 
      you will identify the best matching index.

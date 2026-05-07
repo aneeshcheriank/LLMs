@@ -175,7 +175,12 @@ def get_stock_analytics(ticker: str, benchmark_selected: str = "SPY", riskfree_r
         # 2. Calculate Alpha (Excess return over SPY)
         # We compare 1-year returns of the stock vs the benchmark
         # 1. Download both at once to ensure date alignment
-        data = yf.download([ticker, benchmark_selected], period="1y")["Adj Close"].dropna()
+        data = yf.download([ticker, benchmark_selected], period="1y")
+        # check "Adj Close" is available
+        if "Adj Close" in data.columns:
+            data = data["Adj Close"].dropna()
+        else:
+            data = data["Close"].dropna()
         
         if len(data) > 1:
             # 2. Calculate returns using the same starting and ending dates
@@ -200,10 +205,10 @@ def get_stock_analytics(ticker: str, benchmark_selected: str = "SPY", riskfree_r
         return {"error": f"Failed to fetch data for {ticker}: {str(e)}"}
 
 stock_picker_tool_mapping = {
-    "get_index_constituents": get_index_constituents,
-    search_tool.name: search_tool,
+    # "get_index_constituents": get_index_constituents,
+    # search_tool.name: search_tool,
     "get_stock_analytics": get_stock_analytics,
-    wikipeida_seach_tool.name: wikipeida_seach_tool
+    # wikipeida_seach_tool.name: wikipeida_seach_tool
 }
 
 stock_picker_tool_list = list(stock_picker_tool_mapping.values())
