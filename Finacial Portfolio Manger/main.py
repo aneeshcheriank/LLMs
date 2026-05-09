@@ -5,8 +5,8 @@ if __name__ == "__main__":
 
     question = """
     what is a good investmetn stragety for a 30 year
-    old moderate risk investro with 1000 to invest for
-    30 years?"""
+    old moderate risk investor with 1000 to invest for
+    10 years?"""
 
     workflow = build_graph()
     response = workflow.invoke({
@@ -22,4 +22,4 @@ if __name__ == "__main__":
         "risk_free_rate": 0.02
     })
 
-    print(response["portfolio_optimizer_history"][-1])
+    print(response["portfolio"])

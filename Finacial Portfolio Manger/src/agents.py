@@ -334,7 +334,8 @@ def portfolio_optimizer(state: AgentState):
     prompt = ChatPromptTemplate.from_messages([
         ("system", """
         ### ROLE
-        You are a Senior Portfolio Manager specializing in Quantitative Asset Allocation. You have 10+ years of experience in Modern Portfolio Theory and Risk Parity strategies.
+        You are a Senior Portfolio Manager specializing in Quantitative Asset Allocation. You have 10+ years of experience in Modern Portfolio Theory and Risk 
+         Parity strategies.
     
         ### OBJECTIVE
         Your goal is to allocate an investable sum across a curated list of stocks to meet the client's objective: "{user_objective}".
@@ -397,6 +398,7 @@ def tool_call_node_portfolio_optimizer(state: AgentState):
             tool_mapping = portfolio_optimizer_tool_mapping
             if name in tool_mapping:
                 tool_response = tool_mapping[name].invoke(args) #invoke expect dictionary as input
+                print(tool_response)
                 tool_messages.append(
                     ToolMessage(
                         content = str(tool_response),
@@ -404,6 +406,7 @@ def tool_call_node_portfolio_optimizer(state: AgentState):
                     )
                 )
         except Exception as e:
+            print(f"exception in tool call: {e}")
             tool_messages.append(
                 ToolMessage(
                     content = f"Error calling tool {name} with args {args}: {str(e)}",
@@ -434,6 +437,10 @@ def summarizer_portfolio_optimizer(state: AgentState):
      the output from the previous tool calls, which messages to find the best portfolio weights for a target volatility.
      - Summarize the details (do not include extra information) for futher processing.
      - capture all informations
+     CRITICAL: 
+     - You must use the EXACT weights provided in the last ToolMessage. 
+     - DO NOT recalculate, round differently, or equalize the weights. 
+     - If the tool says AAPL is 0.0829, you must report 0.0829.
      """),
         MessagesPlaceholder(variable_name="chat_history")
     ])
