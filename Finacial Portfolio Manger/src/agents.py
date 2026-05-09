@@ -133,7 +133,7 @@ def summarizer_node(state: AgentState):
     chain = prompt | llm
     response = chain.invoke({
         "chat_history": state["chat_history"],
-        "user_input": state{"user_input"}
+        "user_input": state["user_input"]
     })
 
     return {"chat_history": [response]}    
@@ -357,7 +357,7 @@ def portfolio_optimizer(state: AgentState):
          Parity strategies.
     
         ### OBJECTIVE
-        Your goal is to allocate an investable sum {investig_sum} across a curated list of stocks to meet the client's risk and return objetives.
+        Your goal is to allocate an investable sum {investing_sum} across a curated list of stocks to meet the client's risk and return objetives.
         The client has a risk of {user_risk} in 7 point risk scale ('Extremely Low', 'Very Low', 'Low', 'Medium', 'High', 'Very High', 'Extremely High')
         The expected return of the client is {expected_return}
          
