@@ -19,7 +19,10 @@ class AgentState(TypedDict):
     chat_history: Annotated[list, operator.add]
     stock_picker_history: Annotated[list, operator.add]
     portfolio_optimizer_history: Annotated[list, operator.add]
-
+    
+    investing_sum: float
+    risk_appetite: str
+    expected_return: float
     perceived_volatility: float
     actual_volatility: float
     base_index: str
@@ -42,6 +45,9 @@ def index_matcher(state: AgentState):
      you will identify the best matching index.
 
      IMPORTANT: 
+     - Find the investment sum, and the expected return (mininum return the user is expecting from the investment, in a 7 point scale)
+     - Find the risk scale of the user in a 7 point risk scale
+     - / point risk scale points ('Extremely Low', 'Very Low', 'Low', 'Medium', 'High', 'Very High', 'Extremely High')
      - You must select an index that reflect the risk and return perference of the user. 
      - You can call the tools at most 5-10 times
      - Do not repeatedly call the tool with similar input
@@ -116,7 +122,8 @@ def summarizer_node(state: AgentState):
      """You are an expert financial reporter. You have multiple years of experience in financial analysis and reporting. Your task is to take 
      the output from the previous tool calls, which includes the best matching index and its volatility, and format it into a clear and concise 
      report for the client. The report should include the recommended index, its actual volatility, how it compares to the client's target volatility, 
-     and any relevant insights or recommendations based on this information.
+     and any relevant insights or recommendations based on this information. 
+     user input: {user_input}
      """),
         MessagesPlaceholder(variable_name="chat_history")
     ])
@@ -125,7 +132,8 @@ def summarizer_node(state: AgentState):
     llm = get_llm()
     chain = prompt | llm
     response = chain.invoke({
-        "chat_history": state["chat_history"]
+        "chat_history": state["chat_history"],
+        "user_input": state{"user_input"}
     })
 
     return {"chat_history": [response]}    
@@ -167,6 +175,9 @@ def formatter_node(state: AgentState):
 
     return {
         "chat_history": [response],
+        "investig sum": report_data["investing_sum"],
+        "risk_class": report_data["risk_class"],
+        "expected_return": report_data["expected_return"],
         "base_index": report_data["base_index"],
         "perceived_volatility": report_data["perceived_volatility"],
         "actual_volatility": report_data["actual_volatility"]
@@ -283,6 +294,14 @@ def tool_call_node_stock_picker(state: AgentState):
         "iterations_stock_picker": iterations
     }
 
+def stock_picker_summarizer(state: AgentState)->str:
+    prompt = """
+You are a financial reportor, with 10 years of experice in this field. Carefully go through the financail messages between various entites
+and summariye the converation beteen various agents and tools.
+CRITICAL:
+Please makeup any information. Only summarize the information in this conversation {chat_history}
+"""
+
 def formatter_node_stock_picker(state: AgentState):
     # 1. Convert the message history into a clean string for the reporter
     # This prevents the "Unknown Tool" error and the "List vs Object" error.
@@ -338,7 +357,9 @@ def portfolio_optimizer(state: AgentState):
          Parity strategies.
     
         ### OBJECTIVE
-        Your goal is to allocate an investable sum across a curated list of stocks to meet the client's objective: "{user_objective}".
+        Your goal is to allocate an investable sum {investig_sum} across a curated list of stocks to meet the client's risk and return objetives.
+        The client has a risk of {user_risk} in 7 point risk scale ('Extremely Low', 'Very Low', 'Low', 'Medium', 'High', 'Very High', 'Extremely High')
+        The expected return of the client is {expected_return}
          
         ### No of stocks
         - 1000 $: 5-10 stocks
@@ -372,7 +393,9 @@ def portfolio_optimizer(state: AgentState):
     response = chain.invoke({
         "selected_stocks": state["filtered_stocks"],
         "portfolio_optimizer_history": state["portfolio_optimizer_history"],
-        "user_objective": state["user_input"]
+        "investing_sum": state["investing_sum"],
+        "user_risk": state["risk_class"],
+        "expected_return": state["expected_return"] 
     })
 
     return{
