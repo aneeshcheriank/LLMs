@@ -1,9 +1,9 @@
 from langgraph.graph import StateGraph, START, END
 
 from src.agents import (AgentState,index_matcher, tool_call_node, tool_router, summarizer_node, formatter_node, stock_picker, 
-                        tool_call_node_stock_picker, formatter_node_stock_picker, tool_router_stock_picker, portfolio_optimizer,
-                        tool_call_node_portfolio_optimizer, tool_router_portfolio_optimizer, summarizer_portfolio_optimizer,
-                        formatter_node_portfolio)
+                        tool_call_node_stock_picker, formatter_node_stock_picker, tool_router_stock_picker, stock_picker_summarizer,
+                        portfolio_optimizer, tool_call_node_portfolio_optimizer, tool_router_portfolio_optimizer, 
+                        summarizer_portfolio_optimizer, formatter_node_portfolio)
 
 def build_graph():
     workflow = StateGraph(AgentState)
@@ -18,6 +18,7 @@ def build_graph():
     workflow.add_node("stock_picker", stock_picker)
     workflow.add_node("tool_call_node_stock_picker", tool_call_node_stock_picker)
     workflow.add_node("formatter_node_stock_picker", formatter_node_stock_picker)
+    workflow.add_node("stock_picker_summarizer", stock_picker_summarizer)
 
     # portfolio optimizer
     workflow.add_node("portfolio_optimizer", portfolio_optimizer)
@@ -32,6 +33,7 @@ def build_graph():
     workflow.add_edge("summarizer_node", "formatter")
     workflow.add_edge("formatter", "stock_picker")
     workflow.add_edge("tool_call_node_stock_picker", "stock_picker")
+    workflow.add_edge("stock_picker_summarizer", "fomatter_node_stock_picker")
     workflow.add_edge("formatter_node_stock_picker", "portfolio_optimizer")
     workflow.add_edge("tool_call_portfolio_optimizer", "portfolio_optimizer")
     workflow.add_edge("summarizer_portfolio_optimizer", "formatter_portfolio")
@@ -47,7 +49,7 @@ def build_graph():
     workflow.add_conditional_edges(
         "stock_picker", tool_router_stock_picker,
         {"tool_call_node_stock_picker": "tool_call_node_stock_picker",
-         "formatter_node_stock_picker": "formatter_node_stock_picker"}
+         "stock_picker_summarizer": "stock_picker_summarizer"}
     )
 
     # stock picker conditional edge

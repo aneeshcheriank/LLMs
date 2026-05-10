@@ -303,12 +303,15 @@ Please makeup any information. Only summarize the information in this conversati
 """
 
 def formatter_node_stock_picker(state: AgentState):
-    # 1. Convert the message history into a clean string for the reporter
-    # This prevents the "Unknown Tool" error and the "List vs Object" error.
-    context_string = ""
-    for msg in state["stock_picker_history"]:
-        if hasattr(msg, 'content') and msg.content:
-            context_string += f"{msg.type}: {msg.content}\n"
+    # # 1. Convert the message history into a clean string for the reporter
+    # # This prevents the "Unknown Tool" error and the "List vs Object" error.
+    # context_string = ""
+    # for msg in state["stock_picker_history"]:
+    #     if hasattr(msg, 'content') and msg.content:
+    #         context_string += f"{msg.type}: {msg.content}\n"
+    
+    # genearte ouput form the summarized output of the stock stock picker agents interactions
+    last_message = state["stock_picker_history"][-1]
 
     prompt = ChatPromptTemplate.from_messages([
         ("system",
@@ -327,7 +330,7 @@ def formatter_node_stock_picker(state: AgentState):
     
     # 2. Invoke with a plain string variable instead of a message list
     response = chain.invoke({
-        "context": context_string
+        "context": last_message
     })
     report_data = response.model_dump()
 
@@ -347,7 +350,7 @@ def tool_router_stock_picker(state: AgentState):
     # if state["iterations"] >= MAX_TOOL_CALLS:
     #     return "formatter" 
     
-    return "formatter_node_stock_picker"
+    return "stock_picker_summarizer"
 
 def portfolio_optimizer(state: AgentState):
     prompt = ChatPromptTemplate.from_messages([

@@ -10,7 +10,10 @@ if __name__ == "__main__":
 
     workflow = build_graph()
     response = workflow.invoke({
-        "user_input": question,
+        "user_input": question, # need to initialze the values in then only it will be availble to use in state variable
+        "investing_sum": 0,
+        "risk_appetite": "Low",
+        "expected_return": .02,
 
         "chat_history": [],
         "stock_picker_history": [],
