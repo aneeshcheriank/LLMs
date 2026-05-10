@@ -21,7 +21,7 @@ class AgentState(TypedDict):
     portfolio_optimizer_history: Annotated[list, operator.add]
     
     investing_sum: float
-    risk_appetite: str
+    risk_class: str
     expected_return: float
     perceived_volatility: float
     actual_volatility: float
@@ -197,6 +197,8 @@ def stock_picker(state: AgentState):
         INPUT:
         - Investment objective: {user_input}
         - Target volatility: {perceived_volatility}
+        - Risk class of user: {risk_class}
+        - Expected return: {expected_return}
         
         INSTRUCTIONS:
         
@@ -222,7 +224,10 @@ def stock_picker(state: AgentState):
           - Limit highly correlated stocks (e.g., too many semiconductors)
         
         - Select a manageable number of stocks:
-          - Between 30-40 stocks (considering small investment size)
+            - select stocks based on {investing_sum}. 
+                - select 40-50 stock for 1000 $
+                - select 100-120 stocks for 10000 $
+                - select around 400 - 500 stocks for 100000 $
         
         OUTPUT:
         Return a list of selected stocks with their analytics.
@@ -247,7 +252,10 @@ def stock_picker(state: AgentState):
         "base_index": state["base_index"],
         "perceived_volatility": state["perceived_volatility"],
         "risk_free_rate": state["risk_free_rate"],
-        "stock_picker_history": state["stock_picker_history"]
+        "stock_picker_history": state["stock_picker_history"],
+        "investing_sum": state.get("investing_sum"),
+        "expected_return": state.get("expected_return"),
+        "risk_class": state.get("risk_class")
     })
 
     return {

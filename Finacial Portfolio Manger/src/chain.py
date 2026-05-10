@@ -33,7 +33,7 @@ def build_graph():
     workflow.add_edge("summarizer_node", "formatter")
     workflow.add_edge("formatter", "stock_picker")
     workflow.add_edge("tool_call_node_stock_picker", "stock_picker")
-    workflow.add_edge("stock_picker_summarizer", "fomatter_node_stock_picker")
+    workflow.add_edge("stock_picker_summarizer", "formatter_node_stock_picker")
     workflow.add_edge("formatter_node_stock_picker", "portfolio_optimizer")
     workflow.add_edge("tool_call_portfolio_optimizer", "portfolio_optimizer")
     workflow.add_edge("summarizer_portfolio_optimizer", "formatter_portfolio")

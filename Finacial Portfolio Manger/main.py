@@ -12,7 +12,7 @@ if __name__ == "__main__":
     response = workflow.invoke({
         "user_input": question, # need to initialze the values in then only it will be availble to use in state variable
         "investing_sum": 0,
-        "risk_appetite": "Low",
+        "risk_class": "Low",
         "expected_return": .02,
 
         "chat_history": [],
