@@ -3,10 +3,12 @@ from src.agents import stock_picker
 
 if __name__ == "__main__":
 
-    question = """
-    what is a good investmetn stragety for a 30 year
-    old moderate risk investor with 1000 to invest for
-    10 years?"""
+    # question = """
+    # what is a good investmetn stragety for a 30 year
+    # old moderate risk investor with 1000 to invest for
+    # 10 years?"""
+
+    question = "I am looking for 12-15%% yearly return for 2000 $ investment. I am looking to invest the money for 5 years"
 
     workflow = build_graph()
     response = workflow.invoke({
