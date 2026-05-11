@@ -3,6 +3,9 @@ from pydantic import BaseModel, Field
 
 # output schema for the index matcher agent
 class IndexReport(BaseModel):
+    investing_sum: float = Field(description="investing sum in Dollar e.g. 1000")
+    risk_class: str = Field(description = "Risk the investor is willing to take in 7 point scale ('Extremely Low', 'Very Low', 'Low', 'Medium', 'High', 'Very High', 'Extremely High')")
+    expected_return: float = Field(description = "The minimum return the user expect from this investment, e.g. 10.00")
     base_index: str = Field(description="The ticker symbol of the selected index from the curated list, e.g., SPY, AGG.")
     perceived_volatility: float = Field(description="The perceived volatility as a decimal, e.g., 0.12.")
     actual_volatility: float = Field(description="The actual volatility of the selected index as a decimal, e.g., 0.11.")

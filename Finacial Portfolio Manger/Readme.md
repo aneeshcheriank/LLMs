@@ -8,3 +8,12 @@
 - LangGraph workflow
     - feedback loops and Mathematical optimization
 - [workflow](./Readme.md#)
+
+## Running the application
+- install the required packages
+- `pip install -r requirement.txt`
+- from applicaton folder run terminal
+- terminal: `python main.py`
+- .env file
+    - create a .env file in the root folder
+    - update the "DEEPSEEK = xxxxxxxxxxxxx" with the API KEY
