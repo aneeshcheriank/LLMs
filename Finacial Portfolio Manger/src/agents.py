@@ -47,7 +47,7 @@ def index_matcher(state: AgentState):
      IMPORTANT: 
      - Find the investment sum, and the expected return (mininum return the user is expecting from the investment, in a 7 point scale)
      - Find the risk scale of the user in a 7 point risk scale
-     - / point risk scale points ('Extremely Low', 'Very Low', 'Low', 'Medium', 'High', 'Very High', 'Extremely High')
+     - 7-point risk scale points ('Extremely Low', 'Very Low', 'Low', 'Medium', 'High', 'Very High', 'Extremely High')
      - You must select an index that reflect the risk and return perference of the user. 
      - You can call the tools at most 5-10 times
      - Do not repeatedly call the tool with similar input
@@ -222,12 +222,13 @@ def stock_picker(state: AgentState):
         - Ensure basic diversification:
           - Avoid selecting too many stocks from the same sector
           - Limit highly correlated stocks (e.g., too many semiconductors)
-        
-        - Select a manageable number of stocks:
+         
+        - Select manageable number of stock selection
             - select stocks based on {investing_sum}. 
-                - select 40-50 stock for 1000 $
-                - select 100-120 stocks for 10000 $
-                - select around 400 - 500 stocks for 100000 $
+                - select 20 stock for 1000 $
+                - select 60 stocks for 10000 $
+                - select around 120 stocks for 100000 $
+        
         
         OUTPUT:
         Return a list of selected stocks with their analytics.
