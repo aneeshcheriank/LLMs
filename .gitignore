@@ -215,3 +215,5 @@ chroma_db/
 
 # outputs
 output.*
+
+.DS_Store
